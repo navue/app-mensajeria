@@ -3,84 +3,102 @@
 <head>
   <meta charset="UTF-8">
   <title>App Mensajería</title>
-  <link rel="manifest" href="manifest.json">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#1976d2">
+
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
 
 <div class="app-container">
-  
-<!-- Login -->
-<div id="loginView">
-  <h2>Login</h2>
-  <input type="email" id="loginEmail" placeholder="Email">
-  <input type="password" id="loginPassword" placeholder="Contraseña">
 
-  <div class="button-group">
-    <button onclick="login()">Ingresar</button>
-    <button onclick="showRegister()">Registrarse</button>
-  </div>
-</div>
+  <!-- Ingreso -->
+  <section id="loginView" class="view">
+    <h2>Login</h2>
 
-<!-- Registro -->
-<div id="registerView" style="display:none;">
-  <h2>Crear cuenta</h2>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Contraseña">
 
-  <div class="photo-container">
-    <label class="photo-label">
-      <img id="photoPreview" src="assets/images/foto.png" onclick="handlePhotoClick()">
-      <span class="photo-text">Foto (opcional)</span>
-    </label>
-    <input type="file" id="registerPhoto" accept="image/*" hidden>
-  </div>
-  <input type="email" id="registerEmail" placeholder="Email" required>
-  <input type="password" id="registerPassword" placeholder="Contraseña" required>
-  <input type="text" id="registerName" placeholder="Nombre" required>
-  <input type="text" id="registerLastName" placeholder="Apellido" required>
-  <input type="text" id="registerNickname" placeholder="Apodo" required>
+    <div class="button-group">
+      <button class="btn" onclick="login()">Ingresar</button>
+<button class="btn" onclick="showRegister()">Registrarse</button>
+    </div>
+  </section>
 
-  <div class="button-group">
-    <button onclick="register()">Crear cuenta</button>
-    <button onclick="showLogin()">Volver</button>
-  </div>
-</div>
+  <!-- Registro -->
+  <section id="registerView" class="view hidden">
+    <h2>Crear cuenta</h2>
 
-<!-- Chat -->
-<div id="chatView" style="display:none;">
-  <div class="chat-card">
-
-    <div class="chat-header">
-      <h2>Chat</h2>
-      <button onclick="logout()">Logout</button>
+    <div class="photo-container">
+      <label class="photo-label">
+        <img id="photoPreview" src="assets/images/foto.png">
+        <span class="photo-text">Foto (opcional)</span>
+      </label>
+      <input type="file" id="registerPhoto" accept="image/*" hidden>
     </div>
 
-    <div class="chat-container">
-      
-      <!-- Sidebar -->
-      <div class="sidebar" id="usersList"></div>
+    <input type="email" id="registerEmail" placeholder="Email" required>
+    <input type="password" id="registerPassword" placeholder="Contraseña" required>
+    <input type="text" id="registerName" placeholder="Nombre" required>
+    <input type="text" id="registerLastName" placeholder="Apellido" required>
+    <input type="text" id="registerNickname" placeholder="Apodo" required>
 
-      <!-- Área de chat -->
-      <div class="chat-area">
-        <div id="chatBox" style="display:none;">
-          <div id="messages"></div>
+    <div class="button-group">
+      <button class="btn" onclick="register()">Crear cuenta</button>
+      <button class="btn" onclick="showLogin()">Volver</button>
+    </div>
+  </section>
 
-          <div class="message-input">
-            <input id="messageInput" placeholder="Mensaje">
-            <button onclick="sendMessage()">Enviar</button>
+  <!-- Chat -->
+  <section id="chatView" class="view hidden">
+    <div class="chat-card">
+
+      <header class="chat-header">
+        <h2 class="title">Contactos</h2>
+        <button class="btn btn-secondary" onclick="logout()">Logout</button>
+      </header>
+
+      <div class="chat-container">
+
+        <!-- Contactos -->
+        <aside class="sidebar" id="usersList"></aside>
+
+        <!-- Mensajes -->
+        <main class="chat-area">
+          <div id="chatBox" class="hidden">
+
+            <div id="messages"></div>
+
+            <div class="message-input">
+              <input id="messageInput" placeholder="Mensaje">
+              <button class="btn" onclick="sendMessage()">Enviar</button>
+            </div>
+
           </div>
-        </div>
+        </main>
+
       </div>
 
     </div>
-
-  </div>
-</div>
+  </section>
 
 </div>
 
 <script src="js/db.js"></script>
 <script src="js/app.js"></script>
+
+<!-- Registramos el Service Worker -->
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker
+    .register("service-worker.js")
+    .then(() => console.log("Service Worker registrado"))
+    .catch((error) => console.log("Error:", error));
+  }
+</script>
 
 </body>
 </html>

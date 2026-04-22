@@ -35,17 +35,22 @@ function showRegister() {
   document.getElementById("registerView").style.display = "block";
 }
 
+function showChat() {
+  document.getElementById("loginView").style.display = "none";
+  document.getElementById("registerView").style.display = "none";
+  document.getElementById("chatView").style.display = "block";
+
+  document.querySelector(".app-container").classList.add("chat-mode");
+
+  loadUsers();
+}
+
 function showLogin() {
   document.getElementById("loginView").style.display = "block";
   document.getElementById("registerView").style.display = "none";
   document.getElementById("chatView").style.display = "none";
-}
 
-function showChat() {
-  document.getElementById("loginView").style.display = "none";
-  document.getElementById("chatView").style.display = "block";
-
-  loadUsers();
+  document.querySelector(".app-container").classList.remove("chat-mode");
 }
 
 // Auth
@@ -54,11 +59,40 @@ function register() {
   const password = document.getElementById("registerPassword").value;
   const name = document.getElementById("registerName").value;
   const lastName = document.getElementById("registerLastName").value;
-  const nickname = document.getElementById("registerNickname").value;
-
+  const nickname = document.getElementById("registerNickname").value.trim();
   const photoInput = document.getElementById("registerPhoto");
   const file = photoInput.files[0];
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const passRegex = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
 
+  if (!email) {
+    alert("El email es obligatorio");
+    return;
+  }
+    if (!emailRegex.test(email)) {
+    alert("Email inválido");
+    return;
+  }
+  if (!password) {
+    alert("La contraseña es obligatoria");
+    return;
+  }
+    if (!passRegex.test(password)) {
+    alert("La contraseña debe tener al menos 6 caracteres, incluyendo letras y números");
+    return;
+  }
+  if (!name) {
+    alert("El nombre es obligatorio");
+    return;
+  }
+  if (!lastName) {
+    alert("El apellido es obligatorio");
+    return;
+  }
+  if (!nickname) {
+    alert("El apodo es obligatorio");
+    return;
+  }
   if (file) {
     const reader = new FileReader();
 
@@ -127,19 +161,15 @@ function loadUsers() {
         : "assets/images/foto.png";
 
       div.innerHTML = `
-        <div style="display:flex; align-items:center; gap:10px;">
-            <img src="${photo}" 
-                style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-
-            <div>
-            <p><b>${user.name} ${user.lastName}</b></p>
-            <p>@${user.nickname}</p>
-            </div>
-
-            <button onclick="startChat('${user.id}')">Chat</button>
+        <div class="user-info">
+          <img src="${photo}">
+          <div class="user-text">
+            <p><b>@${user.nickname}</b></p>
+          </div>
         </div>
-        `;
+      `;
 
+      div.onclick = () => startChat(user.id);
       container.appendChild(div);
     });
 }
@@ -180,8 +210,15 @@ function loadMessages() {
     .forEach(m => {
       const div = document.createElement("div");
 
-      div.textContent =
-        (m.from === currentUser.id ? "Yo: " : "Otro: ") + m.text;
+      div.classList.add("message");
+
+      if (m.from === currentUser.id) {
+        div.classList.add("me");
+      } else {
+        div.classList.add("other");
+      }
+
+      div.textContent = m.text;
 
       container.appendChild(div);
     });
@@ -205,22 +242,4 @@ function removePhoto() {
 
   img.src = "assets/images/foto.png";
   input.value = "";
-}
-
-function showChat() {
-  document.getElementById("loginView").style.display = "none";
-  document.getElementById("registerView").style.display = "none";
-  document.getElementById("chatView").style.display = "block";
-
-  document.querySelector(".app-container").classList.add("chat-mode");
-
-  loadUsers();
-}
-
-function showLogin() {
-  document.getElementById("loginView").style.display = "block";
-  document.getElementById("registerView").style.display = "none";
-  document.getElementById("chatView").style.display = "none";
-
-  document.querySelector(".app-container").classList.remove("chat-mode");
 }
