@@ -1,88 +1,109 @@
-const DB_NAME = "messagingDB";
-const DB_VERSION = 1;
+const firebaseScripts = [
+  "https://www.gstatic.com/firebasejs/12.1.0/firebase-app-compat.js",
+  "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore-compat.js"
+];
 
-let db;
+let firebaseReady = false;
+let firestore;
 
-const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-request.onupgradeneeded = (e) => {
-  db = e.target.result;
-
-  // USERS
-  if (!db.objectStoreNames.contains("users")) {
-    const usersStore = db.createObjectStore("users", {
-      keyPath: "id"
-    });
-
-    usersStore.createIndex("email", "email", { unique: true });
-  }
-
-  // MESSAGES
-  if (!db.objectStoreNames.contains("messages")) {
-    db.createObjectStore("messages", {
-      keyPath: "id",
-      autoIncrement: true
-    });
-  }
-};
-
-request.onsuccess = (e) => {
-  db = e.target.result;
-  console.log("IndexedDB lista");
-};
-
-request.onerror = () => {
-  console.error("Error abriendo IndexedDB");
-};
-
-function getUsers() {
+function loadScript(src) {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction("users", "readonly");
-    const store = tx.objectStore("users");
+    const script = document.createElement("script");
 
-    const request = store.getAll();
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = reject;
 
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject([]);
+    document.head.appendChild(script);
   });
 }
 
-function registerUser(email, password, name, lastName, nickname, photo) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction("users", "readwrite");
-    const store = tx.objectStore("users");
+async function initFirebase() {
+  if (firebaseReady) return;
 
-    const emailIndex = store.index("email");
-    const checkRequest = emailIndex.get(email);
+  for (const src of firebaseScripts) {
+    await loadScript(src);
+  }
 
-    checkRequest.onsuccess = () => {
-      if (checkRequest.result) {
-        resolve({ error: "Email ya registrado" });
-        return;
-      }
+  const firebaseConfig = {
+    apiKey: "AIzaSyB8RZcaaFCKEMJmX7Ue5DlTB2piFCk2j3Q",
+    authDomain: "app-mensajeria-a7ad3.firebaseapp.com",
+    projectId: "app-mensajeria-a7ad3",
+    storageBucket: "app-mensajeria-a7ad3.firebasestorage.app",
+    messagingSenderId: "40584117129",
+    appId: "1:40584117129:web:a50eb84a90e50c8982bf58",
+    measurementId: "G-NQME1VK9V6"
+  };
 
-      const newUser = {
-        id: Date.now().toString(),
-        email,
-        password,
-        name,
-        lastName,
-        nickname,
-        photo,
-        status: "Disponible",
-        createdAt: new Date().toISOString()
-      };
+  firebase.initializeApp(firebaseConfig);
 
-      store.add(newUser);
+  firestore = firebase.firestore();
 
-      resolve({ success: true });
-    };
+  firebaseReady = true;
 
-    checkRequest.onerror = () => {
-      reject({ error: "Error registrando usuario" });
-    };
-  });
+  console.log("Firebase listo");
 }
+
+// ---------------- USERS ----------------
+
+async function getUsers() {
+  const snapshot = await firestore.collection("users").get();
+
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+}
+
+async function registerUser(
+  email,
+  password,
+  name,
+  lastName,
+  nickname,
+  photo
+) {
+  const users = await getUsers();
+
+  const existsEmail = users.find(u => u.email === email);
+
+  if (existsEmail) {
+    return { error: "Email ya registrado" };
+  }
+
+  await firestore.collection("users").add({
+    email,
+    password,
+    name,
+    lastName,
+    nickname,
+    photo,
+    status: "Disponible",
+    createdAt: new Date().toISOString()
+  });
+
+  return { success: true };
+}
+
+async function updateUser(userId, updatedData) {
+  await firestore
+    .collection("users")
+    .doc(userId)
+    .update(updatedData);
+
+  return { success: true };
+}
+
+async function deleteUser(userId) {
+  await firestore
+    .collection("users")
+    .doc(userId)
+    .delete();
+
+  return { success: true };
+}
+
+// ---------------- LOGIN ----------------
 
 async function loginUser(email, password) {
   const users = await getUsers();
@@ -95,48 +116,67 @@ async function loginUser(email, password) {
     return { error: "Credenciales incorrectas" };
   }
 
-  localStorage.setItem("currentUser", JSON.stringify(user));
+  localStorage.setItem(
+    "currentUser",
+    JSON.stringify(user)
+  );
 
   return { success: true };
 }
 
 function getCurrentUser() {
-  return JSON.parse(localStorage.getItem("currentUser"));
+  return JSON.parse(
+    localStorage.getItem("currentUser")
+  );
 }
 
 function logoutUser() {
   localStorage.removeItem("currentUser");
 }
 
-function getMessages() {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction("messages", "readonly");
-    const store = tx.objectStore("messages");
+// ---------------- MESSAGES ----------------
 
-    const request = store.getAll();
+async function getMessages() {
+  const snapshot = await firestore
+    .collection("messages")
+    .orderBy("date")
+    .get();
 
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject([]);
-  });
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
 }
 
-function addMessage(toUserId, text) {
-  return new Promise((resolve, reject) => {
-    const currentUser = getCurrentUser();
+async function addMessage(toUserId, text) {
+  const currentUser = getCurrentUser();
 
-    const tx = db.transaction("messages", "readwrite");
-    const store = tx.objectStore("messages");
-
-    const message = {
-      from: currentUser.id,
-      to: toUserId,
-      text,
-      date: new Date().toISOString()
-    };
-
-    const request = store.add(message);
-
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject();
+  await firestore.collection("messages").add({
+    from: currentUser.id,
+    to: toUserId,
+    text,
+    date: new Date().toISOString()
   });
+
+  return { success: true };
+}
+
+async function updateMessage(messageId, updatedText) {
+  await firestore
+    .collection("messages")
+    .doc(messageId)
+    .update({
+      text: updatedText
+    });
+
+  return { success: true };
+}
+
+async function deleteMessage(messageId) {
+  await firestore
+    .collection("messages")
+    .doc(messageId)
+    .delete();
+
+  return { success: true };
 }

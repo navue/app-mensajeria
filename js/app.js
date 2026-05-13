@@ -1,5 +1,8 @@
-window.onload = () => {
+window.onload = async () => {
+  await initFirebase();
+
   const user = getCurrentUser();
+
   user ? showChat() : showLogin();
 
   initEvents();
@@ -31,11 +34,12 @@ function showRegister() {
   showView("registerView");
 }
 
-function showChat() {
+async function showChat() {
   showView("chatView");
 
   document.querySelector(".app-container").classList.add("chat-mode");
-  loadUsers();
+
+  await loadUsers();
 }
 
 function showLogin() {
@@ -63,9 +67,15 @@ async function register() {
   if (!email) return showMessage("El email es obligatorio", "error");
   if (!validateEmail(email)) return showMessage("Email inválido", "error");
 
-  if (!password) return showMessage("La contraseña es obligatoria", "error");
+  if (!password) {
+    return showMessage("La contraseña es obligatoria", "error");
+  }
+
   if (!validatePassword(password)) {
-    return showMessage("La contraseña debe tener al menos 6 caracteres, incluyendo letras y números", "error");
+    return showMessage(
+      "La contraseña debe tener al menos 6 caracteres, incluyendo letras y números",
+      "error"
+    );
   }
 
   if (!name) return showMessage("El nombre es obligatorio", "error");
@@ -74,16 +84,34 @@ async function register() {
 
   if (file) {
     readFileAsBase64(file, async (photoBase64) => {
-      await saveUser(email, password, name, lastName, nickname, photoBase64);
+      const result = await registerUser(
+        email,
+        password,
+        name,
+        lastName,
+        nickname,
+        photoBase64
+      );
+
+      handleRegisterResult(result);
     });
-  } else {
-    await saveUser(email, password, name, lastName, nickname, null);
+
+    return;
   }
+
+  const result = await registerUser(
+    email,
+    password,
+    name,
+    lastName,
+    nickname,
+    null
+  );
+
+  handleRegisterResult(result);
 }
 
-async function saveUser(email, password, name, lastName, nickname, photo) {
-  const result = registerUser(email, password, name, lastName, nickname, photo);
-
+function handleRegisterResult(result) {
   if (result.error) {
     showMessage(result.error, "error");
   } else {
@@ -97,7 +125,10 @@ async function login() {
   const password = document.getElementById("loginPassword").value.trim();
 
   if (!email || !password) {
-    return showMessage("Por favor completá email y contraseña", "error");
+    return showMessage(
+      "Por favor completá email y contraseña",
+      "error"
+    );
   }
 
   const result = await loginUser(email, password);
@@ -105,7 +136,7 @@ async function login() {
   if (result.error) {
     showMessage(result.error, "error");
   } else {
-    showChat();
+    await showChat();
   }
 }
 
@@ -117,6 +148,7 @@ function logout() {
 async function loadUsers() {
   const users = await getUsers();
   const currentUser = getCurrentUser();
+
   const container = document.getElementById("usersList");
 
   container.innerHTML = "";
@@ -130,6 +162,7 @@ async function loadUsers() {
 
 function createUserElement(user) {
   const div = document.createElement("div");
+
   div.classList.add("user-item");
 
   const photo = user.photo && user.photo !== "undefined"
@@ -145,29 +178,40 @@ function createUserElement(user) {
     </div>
   `;
 
-  div.addEventListener("pointerdown", () => startChat(user.id));
+  div.addEventListener("pointerdown", () => {
+    startChat(user.id);
+  });
+
   return div;
 }
 
 let currentChatUser = null;
 
-function startChat(userId) {
+async function startChat(userId) {
   currentChatUser = userId;
+
   document.getElementById("chatBox").style.display = "block";
-  loadMessages();
+
+  await loadMessages();
 }
 
 async function sendMessage() {
   const input = document.getElementById("messageInput");
   const text = input.value.trim();
 
-  if (!text) return showMessage("Escribí un mensaje", "error");
-  if (!currentChatUser) return showMessage("Seleccioná un contacto", "error");
+  if (!text) {
+    return showMessage("Escribí un mensaje", "error");
+  }
+
+  if (!currentChatUser) {
+    return showMessage("Seleccioná un contacto", "error");
+  }
 
   await addMessage(currentChatUser, text);
 
   input.value = "";
-  loadMessages();
+
+  await loadMessages();
 
   showMessage("Mensaje enviado", "ok");
 }
@@ -175,6 +219,7 @@ async function sendMessage() {
 async function loadMessages() {
   const messages = await getMessages();
   const currentUser = getCurrentUser();
+
   const container = document.getElementById("messages");
 
   container.innerHTML = "";
@@ -185,26 +230,32 @@ async function loadMessages() {
       (m.from === currentChatUser && m.to === currentUser.id)
     )
     .forEach(m => {
-      container.appendChild(createMessageElement(m, currentUser));
+      container.appendChild(
+        createMessageElement(m, currentUser)
+      );
     });
 }
 
-function createMessageElement(m, currentUser) {
+function createMessageElement(message, currentUser) {
   const div = document.createElement("div");
-  div.classList.add("message", m.from === currentUser.id ? "me" : "other");
-  div.textContent = m.text;
+
+  div.classList.add(
+    "message",
+    message.from === currentUser.id ? "me" : "other"
+  );
+
+  div.textContent = message.text;
+
   return div;
 }
 
-let hasPhoto = false;
-
 function handlePhotoChange(e) {
   const file = e.target.files[0];
+
   if (!file) return;
 
   readFileAsBase64(file, (base64) => {
     document.getElementById("photoPreview").src = base64;
-    hasPhoto = true;
   });
 }
 
@@ -219,13 +270,17 @@ function handlePhotoClick() {
 }
 
 function removePhoto() {
-  document.getElementById("photoPreview").src = "assets/images/foto.png";
+  document.getElementById("photoPreview").src =
+    "assets/images/foto.png";
+
   document.getElementById("registerPhoto").value = "";
 }
 
 function readFileAsBase64(file, callback) {
   const reader = new FileReader();
+
   reader.onload = () => callback(reader.result);
+
   reader.readAsDataURL(file);
 }
 

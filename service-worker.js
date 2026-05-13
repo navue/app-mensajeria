@@ -1,19 +1,22 @@
-const CACHE_NAME = "app-mensajeria-cache";
+const CACHE_NAME = "app-mensajeria-cache-v2";
 
 const urlsToCache = [
   "./",
   "./index.html",
   "./css/styles.css",
   "./js/app.js",
+  "./js/db.js",
   "./manifest.json",
   "./assets/images/fondo.png",
   "./assets/images/foto.png",
   "./offline.html"
 ];
 
-// INSTALL: guarda archivos iniciales
+// INSTALL
 self.addEventListener("install", (event) => {
   console.log("Service Worker: Instalando...");
+
+  self.skipWaiting();
 
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -23,7 +26,7 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// ACTIVATE: limpia cache viejo
+// ACTIVATE
 self.addEventListener("activate", (event) => {
   console.log("Service Worker: Activado");
 
@@ -39,9 +42,11 @@ self.addEventListener("activate", (event) => {
       );
     })
   );
+
+  self.clients.claim();
 });
 
-// FETCH: estrategia inteligente, busca primero en la red y luego en cache
+// FETCH
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
