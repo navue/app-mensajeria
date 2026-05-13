@@ -4,7 +4,6 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
-/* Inputs */
 input {
   width: 100%;
   margin: 10px 0;
@@ -15,7 +14,6 @@ input {
   box-sizing: border-box;
 }
 
-/* Layout */
 .app-container {
   height: 100vh;
   display: flex;
@@ -27,17 +25,15 @@ input {
   align-items: stretch;
 }
 
-/* ===== TITULOS ===== */
 .title {
   font-size: 28px;
   font-weight: bold;
-  margin-bottom: 10px;
+  margin: 0;
 }
 
-/* ===== BOTONES (GLOBAL) ===== */
 .btn {
-  padding: 0 16px; 
-  height: 45px; 
+  padding: 0 16px;
+  height: 45px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -62,7 +58,6 @@ input {
   background: #5a6268;
 }
 
-/* Grupo de botones */
 .button-group {
   display: flex;
   gap: 10px;
@@ -73,7 +68,6 @@ input {
   flex: 1;
 }
 
-/* ===== CARD DE CHAT ===== */
 .chat-card {
   width: 100%;
   max-width: 900px;
@@ -93,13 +87,11 @@ input {
   padding: 15px;
 }
 
-/* Contenedor principal */
 .chat-container {
   display: flex;
   flex: 1;
 }
 
-/* ===== SIDEBAR ===== */
 .sidebar {
   width: 30%;
   padding: 15px;
@@ -107,20 +99,22 @@ input {
   border-right: 1px solid #ddd;
 }
 
-/* ===== USUARIOS ===== */
 .user-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: white;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  padding: 10px;
+  padding: 12px;
   margin-bottom: 10px;
   border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .user-item:hover {
   background: #e9ecef;
+  transform: scale(1.02);
 }
 
 .user-info {
@@ -141,7 +135,6 @@ input {
   font-size: 14px;
 }
 
-/* ===== CHAT AREA ===== */
 .chat-area {
   width: 70%;
   display: flex;
@@ -149,7 +142,6 @@ input {
   background: #fff;
 }
 
-/* ===== MENSAJES ===== */
 #messages {
   flex: 1;
   padding: 15px;
@@ -176,7 +168,6 @@ input {
   margin-right: auto;
 }
 
-/* ===== INPUT MENSAJE ===== */
 .message-input {
   display: flex;
   gap: 10px;
@@ -186,13 +177,13 @@ input {
 
 .message-input input {
   flex: 3;
+  margin: 0;
 }
 
 .message-input .btn {
   flex: 1;
 }
 
-/* ===== LOGIN / REGISTRO ===== */
 #loginView,
 #registerView {
   width: 320px;
@@ -201,7 +192,6 @@ input {
   box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
-/* ===== FOTO ===== */
 .photo-container {
   display: flex;
   justify-content: center;
@@ -229,34 +219,33 @@ input {
   margin-bottom: 5px;
 }
 
-.title {
-  font-size: 28px;
-  font-weight: bold;
-  margin: 0;
+#globalMessage {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  background: rgba(0,0,0,0.85);
+  color: white;
+
+  padding: 12px 20px;
+  border-radius: 8px;
+
+  font-size: 14px;
+  z-index: 999;
+
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.user-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: white;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+#globalMessage.show {
+  opacity: 1;
 }
 
-.user-item:hover {
-  background: #e9ecef;
-  transform: scale(1.02);
+#globalMessage.ok {
+  background: #28a745;
 }
 
-.chat-header .btn {
-  height: 45px;
-}
-
-.message-input input {
-  margin: 0;
+#globalMessage.error {
+  background: #dc3545;
 }

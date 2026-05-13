@@ -2,13 +2,40 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Sin conexión</title>
+  <meta charset="UTF-8">
+  <title>Sin conexión</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Reutilizás tus estilos -->
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
-    <h1>⚠️ Sin conexión</h1>
-    <p>No tenés internet, pero la app sigue funcionando.</p>
+
+  <div class="app-container">
+
+    <div class="chat-card" style="max-width: 400px; height: auto; padding: 20px; text-align: center;">
+
+      <h2 class="title">⚠️ Sin conexión</h2>
+
+      <p style="margin: 15px 0;">
+        No tenés conexión a internet.<br>
+        Podés seguir usando algunas funciones de la app.
+      </p>
+
+      <button class="btn" onclick="retryConnection()">Reintentar</button>
+
+    </div>
+
+  </div>
+
+  <script>
+    function retryConnection() {
+      location.reload();
+    }
+  </script>
+
 </body>
 
 </html>

@@ -1,137 +1,109 @@
 window.onload = () => {
   const user = getCurrentUser();
+  user ? showChat() : showLogin();
 
-  if (user) {
-    showChat();
-  } else {
-    showLogin();
-  }
-
-  const input = document.getElementById("registerPhoto");
-
-  if (input) {
-    input.addEventListener("change", function () {
-      const file = this.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-
-      reader.onload = function (e) {
-        const img = document.getElementById("photoPreview");
-        img.src = e.target.result;
-
-        hasPhoto = true;
-      };
-
-      reader.readAsDataURL(file);
-    });
-  }
-  
+  initEvents();
 };
 
-// Vistas
+function initEvents() {
+  const input = document.getElementById("registerPhoto");
+  const sendBtn = document.getElementById("sendBtn");
+  const photo = document.getElementById("photoPreview");
+
+  input?.addEventListener("change", handlePhotoChange);
+  sendBtn?.addEventListener("pointerdown", sendMessage);
+
+  photo?.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    handlePhotoClick();
+  });
+}
+
+function showView(viewId) {
+  ["loginView", "registerView", "chatView"].forEach(id => {
+    document.getElementById(id).style.display = "none";
+  });
+
+  document.getElementById(viewId).style.display = "block";
+}
+
 function showRegister() {
-  document.getElementById("loginView").style.display = "none";
-  document.getElementById("registerView").style.display = "block";
+  showView("registerView");
 }
 
 function showChat() {
-  document.getElementById("loginView").style.display = "none";
-  document.getElementById("registerView").style.display = "none";
-  document.getElementById("chatView").style.display = "block";
+  showView("chatView");
 
   document.querySelector(".app-container").classList.add("chat-mode");
-
   loadUsers();
 }
 
 function showLogin() {
-  document.getElementById("loginView").style.display = "block";
-  document.getElementById("registerView").style.display = "none";
-  document.getElementById("chatView").style.display = "none";
+  showView("loginView");
 
   document.querySelector(".app-container").classList.remove("chat-mode");
 }
 
-// Auth
-function register() {
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validatePassword(password) {
+  return /^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(password);
+}
+
+async function register() {
   const email = document.getElementById("registerEmail").value;
   const password = document.getElementById("registerPassword").value;
   const name = document.getElementById("registerName").value;
   const lastName = document.getElementById("registerLastName").value;
   const nickname = document.getElementById("registerNickname").value.trim();
-  const photoInput = document.getElementById("registerPhoto");
-  const file = photoInput.files[0];
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const passRegex = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
+  const file = document.getElementById("registerPhoto").files[0];
 
-  if (!email) {
-    alert("El email es obligatorio");
-    return;
+  if (!email) return showMessage("El email es obligatorio", "error");
+  if (!validateEmail(email)) return showMessage("Email inválido", "error");
+
+  if (!password) return showMessage("La contraseña es obligatoria", "error");
+  if (!validatePassword(password)) {
+    return showMessage("La contraseña debe tener al menos 6 caracteres, incluyendo letras y números", "error");
   }
-    if (!emailRegex.test(email)) {
-    alert("Email inválido");
-    return;
-  }
-  if (!password) {
-    alert("La contraseña es obligatoria");
-    return;
-  }
-    if (!passRegex.test(password)) {
-    alert("La contraseña debe tener al menos 6 caracteres, incluyendo letras y números");
-    return;
-  }
-  if (!name) {
-    alert("El nombre es obligatorio");
-    return;
-  }
-  if (!lastName) {
-    alert("El apellido es obligatorio");
-    return;
-  }
-  if (!nickname) {
-    alert("El apodo es obligatorio");
-    return;
-  }
+
+  if (!name) return showMessage("El nombre es obligatorio", "error");
+  if (!lastName) return showMessage("El apellido es obligatorio", "error");
+  if (!nickname) return showMessage("El apodo es obligatorio", "error");
+
   if (file) {
-    const reader = new FileReader();
-
-    reader.onload = function () {
-      const photoBase64 = reader.result;
-
-      saveUser(email, password, name, lastName, nickname, photoBase64);
-    };
-
-    reader.readAsDataURL(file);
+    readFileAsBase64(file, async (photoBase64) => {
+      await saveUser(email, password, name, lastName, nickname, photoBase64);
+    });
   } else {
-    saveUser(email, password, name, lastName, nickname, null);
+    await saveUser(email, password, name, lastName, nickname, null);
   }
 }
 
-function saveUser(email, password, name, lastName, nickname, photo) {
+async function saveUser(email, password, name, lastName, nickname, photo) {
   const result = registerUser(email, password, name, lastName, nickname, photo);
 
   if (result.error) {
-    alert(result.error);
+    showMessage(result.error, "error");
   } else {
-    alert("Usuario creado correctamente");
+    showMessage("Usuario creado correctamente", "ok");
     showLogin();
   }
 }
 
-function login() {
+async function login() {
   const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value.trim();
 
   if (!email || !password) {
-    alert("Por favor completá email y contraseña");
-    return;
+    return showMessage("Por favor completá email y contraseña", "error");
   }
 
-  const result = loginUser(email, password);
+  const result = await loginUser(email, password);
 
   if (result.error) {
-    alert(result.error);
+    showMessage(result.error, "error");
   } else {
     showChat();
   }
@@ -142,64 +114,69 @@ function logout() {
   showLogin();
 }
 
-function loadUsers() {
-  const users = getUsers();
+async function loadUsers() {
+  const users = await getUsers();
   const currentUser = getCurrentUser();
-
   const container = document.getElementById("usersList");
+
   container.innerHTML = "";
 
   users
     .filter(u => u.id !== currentUser.id)
     .forEach(user => {
-      const div = document.createElement("div");
-
-      div.classList.add("user-item");
-
-      const photo = (user.photo && user.photo !== "undefined" && user.photo !== "")
-        ? user.photo
-        : "assets/images/foto.png";
-
-      div.innerHTML = `
-        <div class="user-info">
-          <img src="${photo}">
-          <div class="user-text">
-            <p><b>@${user.nickname}</b></p>
-          </div>
-        </div>
-      `;
-
-      div.onclick = () => startChat(user.id);
-      container.appendChild(div);
+      container.appendChild(createUserElement(user));
     });
+}
+
+function createUserElement(user) {
+  const div = document.createElement("div");
+  div.classList.add("user-item");
+
+  const photo = user.photo && user.photo !== "undefined"
+    ? user.photo
+    : "assets/images/foto.png";
+
+  div.innerHTML = `
+    <div class="user-info">
+      <img src="${photo}">
+      <div class="user-text">
+        <p><b>@${user.nickname}</b></p>
+      </div>
+    </div>
+  `;
+
+  div.addEventListener("pointerdown", () => startChat(user.id));
+  return div;
 }
 
 let currentChatUser = null;
 
-function startChat(userId, email) {
+function startChat(userId) {
   currentChatUser = userId;
-
   document.getElementById("chatBox").style.display = "block";
   loadMessages();
 }
 
-function sendMessage() {
+async function sendMessage() {
   const input = document.getElementById("messageInput");
-  const text = input.value;
+  const text = input.value.trim();
 
-  if (!text) return;
+  if (!text) return showMessage("Escribí un mensaje", "error");
+  if (!currentChatUser) return showMessage("Seleccioná un contacto", "error");
 
-  addMessage(currentChatUser, text);
+  await addMessage(currentChatUser, text);
+
   input.value = "";
-
   loadMessages();
+
+  showMessage("Mensaje enviado", "ok");
 }
 
-function loadMessages() {
-  const messages = getMessages();
+async function loadMessages() {
+  const messages = await getMessages();
   const currentUser = getCurrentUser();
-
   const container = document.getElementById("messages");
+
   container.innerHTML = "";
 
   messages
@@ -208,28 +185,33 @@ function loadMessages() {
       (m.from === currentChatUser && m.to === currentUser.id)
     )
     .forEach(m => {
-      const div = document.createElement("div");
-
-      div.classList.add("message");
-
-      if (m.from === currentUser.id) {
-        div.classList.add("me");
-      } else {
-        div.classList.add("other");
-      }
-
-      div.textContent = m.text;
-
-      container.appendChild(div);
+      container.appendChild(createMessageElement(m, currentUser));
     });
+}
+
+function createMessageElement(m, currentUser) {
+  const div = document.createElement("div");
+  div.classList.add("message", m.from === currentUser.id ? "me" : "other");
+  div.textContent = m.text;
+  return div;
 }
 
 let hasPhoto = false;
 
+function handlePhotoChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  readFileAsBase64(file, (base64) => {
+    document.getElementById("photoPreview").src = base64;
+    hasPhoto = true;
+  });
+}
+
 function handlePhotoClick() {
   const input = document.getElementById("registerPhoto");
 
-  if (input.files && input.files.length > 0) {
+  if (input.files?.length > 0) {
     removePhoto();
   } else {
     input.click();
@@ -237,9 +219,25 @@ function handlePhotoClick() {
 }
 
 function removePhoto() {
-  const img = document.getElementById("photoPreview");
-  const input = document.getElementById("registerPhoto");
+  document.getElementById("photoPreview").src = "assets/images/foto.png";
+  document.getElementById("registerPhoto").value = "";
+}
 
-  img.src = "assets/images/foto.png";
-  input.value = "";
+function readFileAsBase64(file, callback) {
+  const reader = new FileReader();
+  reader.onload = () => callback(reader.result);
+  reader.readAsDataURL(file);
+}
+
+function showMessage(text, type = "ok") {
+  const msg = document.getElementById("globalMessage");
+
+  msg.textContent = text;
+  msg.className = `show ${type}`;
+
+  clearTimeout(msg._timeout);
+
+  msg._timeout = setTimeout(() => {
+    msg.className = "";
+  }, 2500);
 }
