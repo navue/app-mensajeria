@@ -158,7 +158,7 @@ function logoutUser() {
 async function getMessages() {
   const snapshot = await firestore
     .collection("messages")
-    .orderBy("date")
+    .orderBy("createdAt")
     .get();
 
   return snapshot.docs.map(doc => ({
@@ -174,7 +174,7 @@ async function addMessage(toUserId, text) {
     from: currentUser.id,
     to: toUserId,
     text,
-    date: new Date().toISOString()
+    createdAt: Date.now()
   });
 
   return { success: true };
@@ -198,4 +198,26 @@ async function deleteMessage(messageId) {
     .delete();
 
   return { success: true };
+}
+
+function subscribeToMessages(callback) {
+
+  return firestore
+    .collection("messages")
+    .orderBy("createdAt")
+    .onSnapshot(snapshot => {
+
+      const messages = [];
+
+      snapshot.forEach(doc => {
+
+        messages.push({
+          id: doc.id,
+          ...doc.data()
+        });
+
+      });
+
+      callback(messages);
+    });
 }

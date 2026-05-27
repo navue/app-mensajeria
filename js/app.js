@@ -11,6 +11,7 @@ window.onload = async () => {
 };
 
 let currentChatUser = null;
+let unsubscribeMessages = null;
 
 function initEvents() {
   const input = document.getElementById("registerPhoto");
@@ -94,12 +95,73 @@ async function showEditProfile() {
 }
 
 async function showChat() {
+
   showView("chatView");
 
-  document.querySelector(".app-container").classList.add("chat-mode");
+  document.querySelector(".app-container")
+    .classList.add("chat-mode");
 
   await loadProfile();
+
   await loadUsers();
+
+  const currentUser = getCurrentUser();
+
+  const messages = await getMessages();
+
+  const userMessages = messages.filter(
+    m =>
+      m.from === currentUser.id ||
+      m.to === currentUser.id
+  );
+
+  if (userMessages.length > 0) {
+
+    const lastMessage =
+      userMessages[userMessages.length - 1];
+
+    currentChatUser =
+      lastMessage.from === currentUser.id
+        ? lastMessage.to
+        : lastMessage.from;
+
+    localStorage.setItem(
+      "currentChatUser",
+      currentChatUser
+    );
+
+    document.getElementById(
+      "chatBox"
+    ).style.display = "block";
+
+    await updateChatHeader(
+      currentChatUser
+    );
+
+    loadMessages();
+
+    return;
+  }
+
+  const savedChatUser =
+    localStorage.getItem(
+      "currentChatUser"
+    );
+
+  if (savedChatUser) {
+
+    currentChatUser = savedChatUser;
+
+    document.getElementById(
+      "chatBox"
+    ).style.display = "block";
+
+    await updateChatHeader(
+      currentChatUser
+    );
+
+    loadMessages();
+  }
 }
 
 async function loadProfile() {
@@ -128,6 +190,7 @@ async function loadProfile() {
 }
 
 async function loadEditProfile() {
+
   const currentUser = getCurrentUser();
 
   if (!currentUser) return;
@@ -151,11 +214,11 @@ async function loadEditProfile() {
   document.getElementById(
     "editPhotoPreview"
   ).src =
-  fullUser.photo || "assets/images/foto.png";
-}
+    fullUser.photo || "assets/images/foto.png";
 
-editProfilePhotoBase64 =
-  fullUser.photo || null;
+  editProfilePhotoBase64 =
+    fullUser.photo || null;
+}
 
 async function updateStatus() {
   const currentUser = getCurrentUser();
@@ -381,7 +444,13 @@ async function login() {
 }
 
 function logout() {
+
   logoutUser();
+
+  localStorage.removeItem(
+    "currentChatUser"
+  );
+
   showLogin();
 }
 
@@ -400,6 +469,29 @@ async function loadUsers() {
     });
 }
 
+async function updateChatHeader(userId) {
+
+  const users = await getUsers();
+
+  const user = users.find(
+    u => u.id === userId
+  );
+
+  const chatUserInfo =
+    document.getElementById("chatUserInfo");
+
+  if (!user) {
+
+    chatUserInfo.textContent =
+      "Seleccioná un contacto";
+
+    return;
+  }
+
+  chatUserInfo.textContent =
+    `Hablando con ${user.nickname}`;
+}
+
 function createUserElement(user) {
   const div = document.createElement("div");
 
@@ -413,7 +505,7 @@ function createUserElement(user) {
     <div class="user-info">
       <img src="${photo}">
       <div class="user-text">
-        <p><b>@${user.nickname}</b></p>
+        <p><b>${user.nickname}</b></p>
       </div>
     </div>
   `;
@@ -426,9 +518,19 @@ function createUserElement(user) {
 }
 
 async function startChat(userId) {
+
   currentChatUser = userId;
 
-  document.getElementById("chatBox").style.display = "block";
+  localStorage.setItem(
+    "currentChatUser",
+    userId
+  );
+
+  document.getElementById(
+    "chatBox"
+  ).style.display = "block";
+
+  await updateChatHeader(userId);
 
   await loadMessages();
 }
@@ -454,23 +556,43 @@ async function sendMessage() {
   showMessage("Mensaje enviado", "ok");
 }
 
-async function loadMessages() {
-  const messages = await getMessages();
+function loadMessages() {
+
   const currentUser = getCurrentUser();
 
-  const container = document.getElementById("messages");
+  const container =
+    document.getElementById("messages");
 
-  container.innerHTML = "";
+  if (unsubscribeMessages) {
+    unsubscribeMessages();
+  }
 
-  messages
-    .filter(m =>
-      (m.from === currentUser.id && m.to === currentChatUser) ||
-      (m.from === currentChatUser && m.to === currentUser.id)
-    )
-    .forEach(m => {
-      container.appendChild(
-        createMessageElement(m, currentUser)
-      );
+  unsubscribeMessages =
+    subscribeToMessages((messages) => {
+
+      container.innerHTML = "";
+
+      messages
+        .filter(m =>
+          (m.from === currentUser.id &&
+            m.to === currentChatUser) ||
+
+          (m.from === currentChatUser &&
+            m.to === currentUser.id)
+        )
+        .forEach(m => {
+
+          container.appendChild(
+            createMessageElement(
+              m,
+              currentUser
+            )
+          );
+
+        });
+
+      container.scrollTop =
+        container.scrollHeight;
     });
 }
 
