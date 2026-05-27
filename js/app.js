@@ -1,3 +1,5 @@
+let editProfilePhotoBase64 = null;
+
 window.onload = async () => {
   await initFirebase();
 
@@ -7,6 +9,8 @@ window.onload = async () => {
 
   initEvents();
 };
+
+let currentChatUser = null;
 
 function initEvents() {
   const input = document.getElementById("registerPhoto");
@@ -20,10 +24,59 @@ function initEvents() {
     e.preventDefault();
     handlePhotoClick();
   });
+
+  const profilePhoto =
+    document.getElementById("profilePhoto");
+
+  const editPhotoPreview =
+    document.getElementById("editPhotoPreview");
+
+  const editPhotoInput =
+    document.getElementById("editPhoto");
+
+  editPhotoPreview?.addEventListener(
+    "pointerdown",
+    () => {
+      editPhotoInput.click();
+    }
+  );
+
+  const editInput =
+  document.getElementById("editPhoto");
+
+  if (editInput) {
+
+    editInput.addEventListener(
+      "change",
+      function () {
+
+        const file = this.files[0];
+
+        if (!file) return;
+
+        readFileAsBase64(file, (base64) => {
+
+          editProfilePhotoBase64 = base64;
+
+          document.getElementById(
+            "editPhotoPreview"
+          ).src = base64;
+        });
+      }
+    );
+  }
+
+  const profileStatus =
+  document.getElementById("profileStatus");
+
+  profileStatus?.addEventListener(
+    "change",
+    updateStatus
+  );
 }
 
 function showView(viewId) {
-  ["loginView", "registerView", "chatView"].forEach(id => {
+  ["loginView", "registerView", "editProfileView", "chatView"].forEach(id => {
     document.getElementById(id).style.display = "none";
   });
 
@@ -34,12 +87,199 @@ function showRegister() {
   showView("registerView");
 }
 
+async function showEditProfile() {
+  showView("editProfileView");
+
+  await loadEditProfile();
+}
+
 async function showChat() {
   showView("chatView");
 
   document.querySelector(".app-container").classList.add("chat-mode");
 
+  await loadProfile();
   await loadUsers();
+}
+
+async function loadProfile() {
+  const currentUser = getCurrentUser();
+
+  if (!currentUser) return;
+
+  const users = await getUsers();
+
+  const fullUser = users.find(
+    u => u.id === currentUser.id
+  );
+
+  if (!fullUser) return;
+
+  document.getElementById("profileNickname").textContent =
+    fullUser.nickname || "Usuario";
+
+  document.getElementById("profileStatus").value =
+    fullUser.status || "";
+
+  document.getElementById("profilePhoto").src =
+  fullUser.photo && fullUser.photo !== "undefined"
+    ? fullUser.photo
+    : "assets/images/foto.png";
+}
+
+async function loadEditProfile() {
+  const currentUser = getCurrentUser();
+
+  if (!currentUser) return;
+
+  const users = await getUsers();
+
+  const fullUser = users.find(
+    u => u.id === currentUser.id
+  );
+
+  if (!fullUser) return;
+
+  document.getElementById(
+    "editProfileEmail"
+  ).value = fullUser.email || "";
+
+  document.getElementById(
+    "editProfileNickname"
+  ).value = fullUser.nickname || "";
+
+  document.getElementById(
+    "editPhotoPreview"
+  ).src =
+  fullUser.photo || "assets/images/foto.png";
+}
+
+editProfilePhotoBase64 =
+  fullUser.photo || null;
+
+async function updateStatus() {
+  const currentUser = getCurrentUser();
+
+  if (!currentUser) return;
+
+  const status =
+    document.getElementById("profileStatus").value;
+
+  await updateUser(currentUser.id, {
+    status
+  });
+
+  const updatedUser = {
+    ...currentUser,
+    status
+  };
+
+  localStorage.setItem(
+    "currentUser",
+    JSON.stringify(updatedUser)
+  );
+
+  showMessage(
+    "Estado actualizado",
+    "ok"
+  );
+}
+
+async function saveProfile() {
+
+  const currentUser = getCurrentUser();
+
+  if (!currentUser) return;
+
+  const nickname =
+    document.getElementById(
+      "editProfileNickname"
+    ).value.trim();
+
+  const password =
+    document.getElementById(
+      "editProfilePassword"
+    ).value.trim();
+
+  const confirmPassword =
+    document.getElementById(
+      "editConfirmPassword"
+    ).value.trim();
+
+  if (password !== confirmPassword) {
+
+    return showMessage(
+      "Las contraseñas no coinciden",
+      "error"
+    );
+  }
+
+  let photo = editProfilePhotoBase64;
+
+  if (!photo) {
+
+    const preview =
+      document.getElementById(
+        "editPhotoPreview"
+      ).src;
+
+    if (
+      preview.includes("assets/images/foto.png")
+    ) {
+      photo = null;
+    }
+  }
+
+  const updatedData = {
+    nickname,
+    photo
+  };
+
+  if (password) {
+
+    if (!validatePassword(password)) {
+
+      return showMessage(
+        "La contraseña debe tener al menos 6 caracteres y números",
+        "error"
+      );
+    }
+
+    updatedData.password = password;
+  }
+
+  await updateUser(
+    currentUser.id,
+    updatedData
+  );
+
+  const updatedUser = {
+    ...currentUser,
+    ...updatedData
+  };
+
+  localStorage.setItem(
+    "currentUser",
+    JSON.stringify(updatedUser)
+  );
+
+  showMessage(
+    "Perfil actualizado",
+    "ok"
+  );
+
+  document.getElementById(
+    "editProfilePassword"
+  ).value = "";
+
+  document.getElementById(
+    "editConfirmPassword"
+  ).value = "";
+
+  await loadProfile();
+  await loadUsers();
+
+  showChat();
 }
 
 function showLogin() {
@@ -185,8 +425,6 @@ function createUserElement(user) {
   return div;
 }
 
-let currentChatUser = null;
-
 async function startChat(userId) {
   currentChatUser = userId;
 
@@ -259,6 +497,17 @@ function handlePhotoChange(e) {
   });
 }
 
+function handleProfilePhotoChange(e) {
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  readFileAsBase64(file, (base64) => {
+    document.getElementById("profilePhoto").src =
+      base64;
+  });
+}
+
 function handlePhotoClick() {
   const input = document.getElementById("registerPhoto");
 
@@ -279,7 +528,35 @@ function removePhoto() {
 function readFileAsBase64(file, callback) {
   const reader = new FileReader();
 
-  reader.onload = () => callback(reader.result);
+  reader.onload = (event) => {
+    const img = new Image();
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      const maxWidth = 300;
+      const scale = maxWidth / img.width;
+
+      canvas.width = maxWidth;
+      canvas.height = img.height * scale;
+
+      ctx.drawImage(
+        img,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+      const compressedBase64 =
+        canvas.toDataURL("image/jpeg", 0.7);
+
+      callback(compressedBase64);
+    };
+
+    img.src = event.target.result;
+  };
 
   reader.readAsDataURL(file);
 }

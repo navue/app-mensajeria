@@ -49,6 +49,21 @@ async function initFirebase() {
 async function getUsers() {
   const snapshot = await firestore.collection("users").get();
 
+  return snapshot.docs.map(doc => {
+    const data = doc.data();
+
+    delete data.password;
+
+    return {
+      id: doc.id,
+      ...data
+    };
+  });
+}
+
+async function getUsersWithPassword() {
+  const snapshot = await firestore.collection("users").get();
+
   return snapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
@@ -106,7 +121,7 @@ async function deleteUser(userId) {
 // ---------------- LOGIN ----------------
 
 async function loginUser(email, password) {
-  const users = await getUsers();
+  const users = await getUsersWithPassword();
 
   const user = users.find(
     u => u.email === email && u.password === password
@@ -118,7 +133,11 @@ async function loginUser(email, password) {
 
   localStorage.setItem(
     "currentUser",
-    JSON.stringify(user)
+    JSON.stringify({
+      id: user.id,
+      email: user.email,
+      nickname: user.nickname
+    })
   );
 
   return { success: true };

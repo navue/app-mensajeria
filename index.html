@@ -48,8 +48,58 @@
 
     <div class="button-group">
       <button class="btn" onclick="register()">Crear cuenta</button>
-      <button class="btn" onclick="showLogin()">Volver</button>
+      <button class="btn btn-secondary" onclick="showLogin()">Volver</button>
     </div>
+  </section>
+
+  <section id="editProfileView" class="view hidden">
+
+    <h2>Editar perfil</h2>
+
+    <div class="photo-container">
+      <label class="photo-label">
+        <img id="editPhotoPreview" src="assets/images/foto.png">
+        <span class="photo-text">Foto de perfil</span>
+      </label>
+
+      <input type="file" id="editPhoto" accept="image/*" hidden>
+    </div>
+
+    <input
+      type="email"
+      id="editProfileEmail"
+      placeholder="Email"
+    >
+
+    <input
+      type="text"
+      id="editProfileNickname"
+      placeholder="Apodo"
+    >
+
+    <input
+      type="password"
+      id="editProfilePassword"
+      placeholder="Nueva contraseña"
+    >
+
+    <input 
+      type="password" 
+      id="editConfirmPassword" 
+      placeholder="Confirmar contraseña"
+    >
+
+    <div class="button-group">
+      <button class="btn" onclick="saveProfile()">
+        Guardar
+      </button>
+
+      <button class="btn btn-secondary"
+        onclick="showChat()">
+        Volver
+      </button>
+    </div>
+
   </section>
 
   <section id="chatView" class="view hidden">
@@ -62,7 +112,32 @@
 
       <div class="chat-container">
 
-        <aside class="sidebar" id="usersList"></aside>
+        <aside class="sidebar">
+
+          <div class="profile-card">
+
+            <div class="profile-photo-container">
+              <img id="profilePhoto" src="assets/images/foto.png">
+            </div>
+
+            <h3 id="profileNickname">Usuario</h3>
+
+            <select id="profileStatus">
+              <option value="Disponible">🟢 Disponible</option>
+              <option value="Ocupado">🔴 Ocupado</option>
+              <option value="Ausente">🟡 Ausente</option>
+              <option value="No molestar">⛔ No molestar</option>
+            </select>
+
+            <button class="btn" onclick="showEditProfile()">
+              Editar perfil
+            </button>
+
+          </div>
+
+          <div id="usersList"></div>
+
+        </aside>
 
         <main class="chat-area">
           <div id="chatBox" class="hidden">

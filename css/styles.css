@@ -4,7 +4,8 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
-input {
+input,
+select {
   width: 100%;
   margin: 10px 0;
   padding: 12px;
@@ -93,7 +94,7 @@ input {
 }
 
 .sidebar {
-  width: 30%;
+  width: 35%;
   padding: 15px;
   background: #f8f9fa;
   border-right: 1px solid #ddd;
@@ -185,7 +186,8 @@ input {
 }
 
 #loginView,
-#registerView {
+#registerView,
+#editProfileView {
   width: 320px;
   padding: 25px;
   border-radius: 12px;
@@ -210,7 +212,8 @@ input {
   color: #666;
 }
 
-#photoPreview {
+#photoPreview,
+#editPhotoPreview {
   width: 100px;
   height: 100px;
   border-radius: 50%;
@@ -248,4 +251,72 @@ input {
 
 #globalMessage.error {
   background: #dc3545;
+}
+
+.profile-card {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.profile-photo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+#profilePhoto {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ddd;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+#profilePhoto:hover {
+  transform: scale(1.05);
+}
+
+#profileNickname {
+  margin: 10px 0 5px;
+  font-size: 18px;
+}
+
+#profileStatus {
+  width: 100%;
+  height: 45px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  background: transparent;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  outline: none;
+  box-shadow: none;
+}
+
+#saveProfileBtn {
+  margin-bottom: 10px;
+  font-size: 14px;
+  width: 100%;
+  height: 45px;
+}
+
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-card input,
+.profile-card .btn {
+  width: 90%;
 }
