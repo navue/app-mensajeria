@@ -1,179 +1,189 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>App Mensajería</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>App Mensajería</title>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#1976d2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1976d2" />
 
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/styles.css">
-</head>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
 
-<body>
+  <body>
+    <div class="app-container">
+      <div id="globalMessage"></div>
 
-<div class="app-container">
+      <section id="loginView" class="view">
+        <h2>Login</h2>
 
-  <div id="globalMessage"></div>
+        <input
+          type="email"
+          id="loginEmail"
+          autocomplete="off"
+          placeholder="Email"
+          required
+        />
+        <input
+          type="password"
+          id="loginPassword"
+          autocomplete="off"
+          placeholder="Contraseña"
+          required
+        />
 
-  <section id="loginView" class="view">
-    <h2>Login</h2>
+        <div class="button-group">
+          <button class="btn" onclick="login()">Ingresar</button>
+          <button class="btn" onclick="showRegister()">Registrarse</button>
+        </div>
+      </section>
 
-    <input type="email" id="loginEmail" placeholder="Email" required>
-    <input type="password" id="loginPassword" placeholder="Contraseña" required>
+      <section id="registerView" class="view hidden">
+        <h2>Crear cuenta</h2>
 
-    <div class="button-group">
-      <button class="btn" onclick="login()">Ingresar</button>
-      <button class="btn" onclick="showRegister()">Registrarse</button>
-    </div>
-  </section>
+        <div class="photo-container">
+          <label class="photo-label" for="registerPhoto">
+            <img id="photoPreview" src="assets/images/foto.png" alt="Preview" />
+            <span class="photo-text">Foto (opcional)</span>
+          </label>
+          <input type="file" id="registerPhoto" accept="image/*" hidden />
+        </div>
 
-  <section id="registerView" class="view hidden">
-    <h2>Crear cuenta</h2>
+        <input type="email" id="registerEmail" placeholder="Email" required />
+        <input
+          type="password"
+          id="registerPassword"
+          placeholder="Contraseña"
+          required
+        />
+        <input type="text" id="registerName" placeholder="Nombre" required />
+        <input
+          type="text"
+          id="registerLastName"
+          placeholder="Apellido"
+          required
+        />
+        <input type="text" id="registerNickname" placeholder="Apodo" required />
 
-    <div class="photo-container">
-      <label class="photo-label" for="registerPhoto">
-        <img id="photoPreview" src="assets/images/foto.png" alt="Preview">
-        <span class="photo-text">Foto (opcional)</span>
-      </label>
-      <input type="file" id="registerPhoto" accept="image/*" hidden>
-    </div>
+        <div class="button-group">
+          <button class="btn" onclick="register()">Crear cuenta</button>
+          <button class="btn btn-secondary" onclick="backToLogin()">
+            Volver
+          </button>
+        </div>
+      </section>
 
-    <input type="email" id="registerEmail" placeholder="Email" required>
-    <input type="password" id="registerPassword" placeholder="Contraseña" required>
-    <input type="text" id="registerName" placeholder="Nombre" required>
-    <input type="text" id="registerLastName" placeholder="Apellido" required>
-    <input type="text" id="registerNickname" placeholder="Apodo" required>
+      <section id="editProfileView" class="view hidden">
+        <h2>Editar perfil</h2>
 
-    <div class="button-group">
-      <button class="btn" onclick="register()">Crear cuenta</button>
-      <button class="btn btn-secondary" onclick="showLogin()">Volver</button>
-    </div>
-  </section>
+        <div class="photo-container">
+          <label class="photo-label">
+            <img id="editPhotoPreview" src="assets/images/foto.png" />
+            <span class="photo-text">Foto de perfil</span>
+          </label>
 
-  <section id="editProfileView" class="view hidden">
+          <input type="file" id="editPhoto" accept="image/*" hidden />
+        </div>
 
-    <h2>Editar perfil</h2>
+        <input type="email" id="editProfileEmail" placeholder="Email" />
 
-    <div class="photo-container">
-      <label class="photo-label">
-        <img id="editPhotoPreview" src="assets/images/foto.png">
-        <span class="photo-text">Foto de perfil</span>
-      </label>
+        <input type="text" id="editProfileName" placeholder="Nombre" />
 
-      <input type="file" id="editPhoto" accept="image/*" hidden>
-    </div>
+        <input type="text" id="editProfileLastName" placeholder="Apellido" />
 
-    <input
-      type="email"
-      id="editProfileEmail"
-      placeholder="Email"
-    >
+        <input type="text" id="editProfileNickname" placeholder="Apodo" />
 
-    <input
-      type="text"
-      id="editProfileNickname"
-      placeholder="Apodo"
-    >
+        <input
+          type="password"
+          id="editProfilePassword"
+          placeholder="Nueva contraseña"
+        />
 
-    <input
-      type="password"
-      id="editProfilePassword"
-      placeholder="Nueva contraseña"
-    >
+        <input
+          type="password"
+          id="editConfirmPassword"
+          placeholder="Confirmar contraseña"
+        />
 
-    <input 
-      type="password" 
-      id="editConfirmPassword" 
-      placeholder="Confirmar contraseña"
-    >
+        <div class="button-group">
+          <button class="btn" onclick="saveProfile()">Guardar</button>
 
-    <div class="button-group">
-      <button class="btn" onclick="saveProfile()">
-        Guardar
-      </button>
+          <button class="btn btn-secondary" onclick="showChat()">Volver</button>
+        </div>
+      </section>
 
-      <button class="btn btn-secondary"
-        onclick="showChat()">
-        Volver
-      </button>
-    </div>
+      <section id="chatView" class="view hidden">
+        <div class="chat-card">
+          <header class="chat-header">
+            <h2 class="title">Contactos</h2>
+            <button class="btn btn-secondary" onclick="logout()">Logout</button>
+          </header>
 
-  </section>
+          <div class="chat-container">
+            <aside class="sidebar">
+              <div class="profile-card">
+                <div class="profile-photo-container">
+                  <img
+                    id="profilePhoto"
+                    src="assets/images/foto.png"
+                    title="Cambiar foto de perfil"
+                  />
 
-  <section id="chatView" class="view hidden">
-    <div class="chat-card">
+                  <input
+                    type="file"
+                    id="profilePhotoInput"
+                    accept="image/*"
+                    hidden
+                  />
+                </div>
 
-      <header class="chat-header">
-        <h2 class="title">Contactos</h2>
-        <button class="btn btn-secondary" onclick="logout()">Logout</button>
-      </header>
+                <h3 id="profileNickname">Usuario</h3>
 
-      <div class="chat-container">
+                <select id="profileStatus">
+                  <option value="Disponible">🟢 Disponible</option>
+                  <option value="Ocupado">🔴 Ocupado</option>
+                  <option value="Ausente">🟡 Ausente</option>
+                  <option value="No molestar">⛔ No molestar</option>
+                </select>
 
-        <aside class="sidebar">
+                <button class="btn" onclick="showEditProfile()">
+                  Editar perfil
+                </button>
+              </div>
 
-          <div class="profile-card">
+              <div id="usersList"></div>
+            </aside>
 
-            <div class="profile-photo-container">
-              <img id="profilePhoto" src="assets/images/foto.png">
-            </div>
+            <main class="chat-area">
+              <div id="chatBox" class="hidden">
+                <div id="chatUserInfo" class="chat-user-info">
+                  Seleccioná un contacto
+                </div>
 
-            <h3 id="profileNickname">Usuario</h3>
+                <div id="messages"></div>
 
-            <select id="profileStatus">
-              <option value="Disponible">🟢 Disponible</option>
-              <option value="Ocupado">🔴 Ocupado</option>
-              <option value="Ausente">🟡 Ausente</option>
-              <option value="No molestar">⛔ No molestar</option>
-            </select>
-
-            <button class="btn" onclick="showEditProfile()">
-              Editar perfil
-            </button>
-
+                <div class="message-input">
+                  <input id="messageInput" placeholder="Mensaje" required />
+                  <button class="btn" id="sendBtn">Enviar</button>
+                </div>
+              </div>
+            </main>
           </div>
-
-          <div id="usersList"></div>
-
-        </aside>
-
-        <main class="chat-area">
-          <div id="chatBox" class="hidden">
-
-            <div id="chatUserInfo" class="chat-user-info">
-              Seleccioná un contacto
-            </div>
-
-            <div id="messages"></div>
-
-            <div class="message-input">
-              <input id="messageInput" placeholder="Mensaje" required>
-              <button class="btn" id="sendBtn">Enviar</button>
-            </div>
-
-          </div>
-        </main>
-
-      </div>
-
+        </div>
+      </section>
     </div>
-  </section>
 
-</div>
+    <script src="js/db.js"></script>
+    <script src="js/app.js"></script>
 
-<script src="js/db.js"></script>
-<script src="js/app.js"></script>
-
-<script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker
-      .register("service-worker.js")
-      .then(() => console.log("Service Worker registrado"))
-      .catch(err => console.log("Error:", err));
-  }
-</script>
-
-</body>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("service-worker.js")
+          .then(() => console.log("Service Worker registrado"))
+          .catch((err) => console.log("Error:", err));
+      }
+    </script>
+  </body>
 </html>

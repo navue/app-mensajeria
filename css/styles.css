@@ -1,7 +1,7 @@
 body {
   background: url("../assets/images/fondo.jpg") no-repeat center/cover;
   text-align: center;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 
 input,
@@ -77,7 +77,7 @@ select {
   flex-direction: column;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   overflow: hidden;
 }
 
@@ -91,6 +91,8 @@ select {
 .chat-container {
   display: flex;
   flex: 1;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .sidebar {
@@ -105,7 +107,7 @@ select {
   justify-content: space-between;
   align-items: center;
   background: white;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   padding: 12px;
   margin-bottom: 10px;
   border-radius: 10px;
@@ -141,12 +143,27 @@ select {
   display: flex;
   flex-direction: column;
   background: #fff;
+  min-height: 0;
 }
 
 #messages {
   flex: 1;
-  padding: 15px;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+#messages::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
 }
 
 .message {
@@ -174,6 +191,16 @@ select {
   gap: 10px;
   padding: 15px;
   border-top: 1px solid #ddd;
+  background: white;
+  position: sticky;
+  bottom: 0;
+}
+
+#chatBox {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .message-input input {
@@ -191,7 +218,7 @@ select {
   width: 320px;
   padding: 25px;
   border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 .photo-container {
@@ -228,7 +255,7 @@ select {
   left: 50%;
   transform: translateX(-50%);
 
-  background: rgba(0,0,0,0.85);
+  background: rgba(0, 0, 0, 0.85);
   color: white;
 
   padding: 12px 20px;
@@ -258,7 +285,7 @@ select {
   border-radius: 12px;
   padding: 15px;
   margin-bottom: 15px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
 .profile-photo-container {
@@ -328,4 +355,39 @@ select {
   font-size: 15px;
   background: #f8f9fa;
   text-align: left;
+}
+
+.message-status {
+  font-size: 11px;
+  margin-top: 4px;
+  opacity: 0.8;
+  text-align: right;
+}
+
+.hidden {
+  display: none;
+}
+
+.message-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.edit-icon,
+.delete-icon {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+
+  filter: brightness(0) invert(1);
+
+  transition: transform 0.2s ease;
+}
+
+.edit-icon:hover,
+.delete-icon:hover {
+  transform: scale(1.15);
 }

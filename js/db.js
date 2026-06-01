@@ -1,6 +1,6 @@
 const firebaseScripts = [
   "https://www.gstatic.com/firebasejs/12.1.0/firebase-app-compat.js",
-  "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore-compat.js"
+  "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore-compat.js",
 ];
 
 let firebaseReady = false;
@@ -32,7 +32,7 @@ async function initFirebase() {
     storageBucket: "app-mensajeria-a7ad3.firebasestorage.app",
     messagingSenderId: "40584117129",
     appId: "1:40584117129:web:a50eb84a90e50c8982bf58",
-    measurementId: "G-NQME1VK9V6"
+    measurementId: "G-NQME1VK9V6",
   };
 
   firebase.initializeApp(firebaseConfig);
@@ -49,14 +49,14 @@ async function initFirebase() {
 async function getUsers() {
   const snapshot = await firestore.collection("users").get();
 
-  return snapshot.docs.map(doc => {
+  return snapshot.docs.map((doc) => {
     const data = doc.data();
 
     delete data.password;
 
     return {
       id: doc.id,
-      ...data
+      ...data,
     };
   });
 }
@@ -64,23 +64,16 @@ async function getUsers() {
 async function getUsersWithPassword() {
   const snapshot = await firestore.collection("users").get();
 
-  return snapshot.docs.map(doc => ({
+  return snapshot.docs.map((doc) => ({
     id: doc.id,
-    ...doc.data()
+    ...doc.data(),
   }));
 }
 
-async function registerUser(
-  email,
-  password,
-  name,
-  lastName,
-  nickname,
-  photo
-) {
+async function registerUser(email, password, name, lastName, nickname, photo) {
   const users = await getUsers();
 
-  const existsEmail = users.find(u => u.email === email);
+  const existsEmail = users.find((u) => u.email === email);
 
   if (existsEmail) {
     return { error: "Email ya registrado" };
@@ -94,26 +87,20 @@ async function registerUser(
     nickname,
     photo,
     status: "Disponible",
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   });
 
   return { success: true };
 }
 
 async function updateUser(userId, updatedData) {
-  await firestore
-    .collection("users")
-    .doc(userId)
-    .update(updatedData);
+  await firestore.collection("users").doc(userId).update(updatedData);
 
   return { success: true };
 }
 
 async function deleteUser(userId) {
-  await firestore
-    .collection("users")
-    .doc(userId)
-    .delete();
+  await firestore.collection("users").doc(userId).delete();
 
   return { success: true };
 }
@@ -123,9 +110,7 @@ async function deleteUser(userId) {
 async function loginUser(email, password) {
   const users = await getUsersWithPassword();
 
-  const user = users.find(
-    u => u.email === email && u.password === password
-  );
+  const user = users.find((u) => u.email === email && u.password === password);
 
   if (!user) {
     return { error: "Credenciales incorrectas" };
@@ -136,17 +121,15 @@ async function loginUser(email, password) {
     JSON.stringify({
       id: user.id,
       email: user.email,
-      nickname: user.nickname
-    })
+      nickname: user.nickname,
+    }),
   );
 
   return { success: true };
 }
 
 function getCurrentUser() {
-  return JSON.parse(
-    localStorage.getItem("currentUser")
-  );
+  return JSON.parse(localStorage.getItem("currentUser"));
 }
 
 function logoutUser() {
@@ -161,9 +144,9 @@ async function getMessages() {
     .orderBy("createdAt")
     .get();
 
-  return snapshot.docs.map(doc => ({
+  return snapshot.docs.map((doc) => ({
     id: doc.id,
-    ...doc.data()
+    ...doc.data(),
   }));
 }
 
@@ -174,48 +157,61 @@ async function addMessage(toUserId, text) {
     from: currentUser.id,
     to: toUserId,
     text,
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    read: false,
   });
 
   return { success: true };
 }
 
 async function updateMessage(messageId, updatedText) {
-  await firestore
-    .collection("messages")
-    .doc(messageId)
-    .update({
-      text: updatedText
-    });
-
-  return { success: true };
+  await firestore.collection("messages").doc(messageId).update({
+    text: updatedText,
+    edited: true,
+    editedAt: Date.now(),
+  });
 }
 
 async function deleteMessage(messageId) {
-  await firestore
-    .collection("messages")
-    .doc(messageId)
-    .delete();
+  await firestore.collection("messages").doc(messageId).delete();
 
   return { success: true };
 }
 
-function subscribeToMessages(callback) {
+async function markMessagesAsRead(fromUserId) {
+  const currentUser = getCurrentUser();
 
+  const snapshot = await firestore
+    .collection("messages")
+    .where("from", "==", fromUserId)
+    .where("to", "==", currentUser.id)
+    .where("read", "==", false)
+    .get();
+
+  const batch = firestore.batch();
+
+  snapshot.forEach((doc) => {
+    batch.update(doc.ref, {
+      read: true,
+      readAt: Date.now(),
+    });
+  });
+
+  await batch.commit();
+}
+
+function subscribeToMessages(callback) {
   return firestore
     .collection("messages")
     .orderBy("createdAt")
-    .onSnapshot(snapshot => {
-
+    .onSnapshot((snapshot) => {
       const messages = [];
 
-      snapshot.forEach(doc => {
-
+      snapshot.forEach((doc) => {
         messages.push({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
         });
-
       });
 
       callback(messages);
