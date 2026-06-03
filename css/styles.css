@@ -155,6 +155,7 @@ select {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  text-align: left;
 }
 
 #messages::-webkit-scrollbar {
@@ -390,4 +391,57 @@ select {
 .edit-icon:hover,
 .delete-icon:hover {
   transform: scale(1.15);
+}
+
+.edit-message-input {
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.edit-message-input {
+  width: 100%;
+  margin: 0 0 8px 0;
+  padding: 8px 10px;
+
+  border: none;
+  border-radius: 8px;
+
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.edit-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.edit-buttons button {
+  border: none;
+  border-radius: 6px;
+
+  padding: 6px 10px;
+
+  font-size: 12px;
+  font-weight: bold;
+
+  cursor: pointer;
+}
+
+.edit-save-btn {
+  background: #28a745;
+  color: white;
+}
+
+.edit-cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.edit-save-btn:hover {
+  background: #218838;
+}
+
+.edit-cancel-btn:hover {
+  background: #5a6268;
 }

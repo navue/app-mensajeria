@@ -135,7 +135,9 @@ async function showChat() {
 
     localStorage.setItem("currentChatUser", currentChatUser);
 
-    document.getElementById("chatBox").style.display = "block";
+    const chatBox = document.getElementById("chatBox");
+    chatBox.classList.remove("hidden");
+    chatBox.style.display = "flex";
 
     await updateChatHeader(currentChatUser);
 
@@ -149,7 +151,9 @@ async function showChat() {
   if (savedChatUser) {
     currentChatUser = savedChatUser;
 
-    document.getElementById("chatBox").style.display = "block";
+    const chatBox = document.getElementById("chatBox");
+    chatBox.classList.remove("hidden");
+    chatBox.style.display = "flex";
 
     await updateChatHeader(currentChatUser);
 
@@ -532,7 +536,9 @@ async function startChat(userId) {
 
   await markMessagesAsRead(userId);
 
-  document.getElementById("chatBox").style.display = "block";
+  const chatBox = document.getElementById("chatBox");
+  chatBox.classList.remove("hidden");
+  chatBox.style.display = "flex";
 
   await updateChatHeader(userId);
 
@@ -565,19 +571,62 @@ async function sendMessage() {
 }
 
 async function editMessage(messageId) {
-  const messages = await getMessages();
 
-  const message = messages.find((m) => m.id === messageId);
+  const textContainer =
+    document.getElementById(
+      `text-${messageId}`
+    );
 
-  if (!message) return;
+  const currentText =
+    textContainer.textContent.trim();
 
-  const newText = prompt("Editar mensaje", message.text);
+  textContainer.innerHTML = `
+  <input
+    id="edit-input-${messageId}"
+    value="${currentText}"
+    class="edit-message-input">
+
+  <div class="edit-buttons">
+
+    <button
+      class="edit-save-btn"
+      onclick="saveEditedMessage('${messageId}')">
+      Guardar
+    </button>
+
+    <button
+      class="edit-cancel-btn"
+      onclick="loadMessages()">
+      Cancelar
+    </button>
+
+  </div>
+`;
+}
+
+async function saveEditedMessage(
+  messageId
+) {
+
+  const input =
+    document.getElementById(
+      `edit-input-${messageId}`
+    );
+
+  const newText =
+    input.value.trim();
 
   if (!newText) return;
 
-  await updateMessage(messageId, newText.trim());
+  await updateMessage(
+    messageId,
+    newText
+  );
 
-  showMessage("Mensaje actualizado", "ok");
+  showMessage(
+    "Mensaje actualizado",
+    "ok"
+  );
 }
 
 async function removeMessage(messageId) {
@@ -670,7 +719,9 @@ function createMessageElement(message, currentUser) {
   );
 
   div.innerHTML = `
-  <div>${message.text}</div>
+  <div class="message-text" id="text-${message.id}">
+    ${message.text}
+  </div>
 
   ${
     message.from === currentUser.id
