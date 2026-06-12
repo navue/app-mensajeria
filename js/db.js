@@ -39,6 +39,16 @@ async function initFirebase() {
 
   firestore = firebase.firestore();
 
+  firestore.enablePersistence().catch((err) => {
+    if (err.code == 'failed-precondition') {
+      console.warn("La persistencia falló: Múltiples pestañas abiertas.");
+    } else if (err.code == 'unimplemented') {
+      console.warn("El navegador no soporta persistencia offline.");
+    } else {
+      console.error("Error al activar persistencia offline de Firestore:", err.code);
+    }
+  });
+
   firebaseReady = true;
 
   console.log("Firebase listo");

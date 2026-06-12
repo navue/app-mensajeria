@@ -577,6 +577,9 @@ async function editMessage(messageId) {
       `text-${messageId}`
     );
 
+    const footerContainer = document.getElementById(`footer-${messageId}`);
+if (footerContainer) footerContainer.style.display = "none";
+
   const currentText =
     textContainer.textContent.trim();
 
@@ -602,6 +605,15 @@ async function editMessage(messageId) {
 
   </div>
 `;
+
+const messageElement = textContainer.closest(".message");
+
+setTimeout(() => {
+  messageElement.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+}, 50);
 }
 
 async function saveEditedMessage(
@@ -631,7 +643,6 @@ async function saveEditedMessage(
 
 async function removeMessage(messageId) {
   const messages = await getMessages();
-
   const message = messages.find((m) => m.id === messageId);
 
   if (!message) return;
@@ -642,18 +653,44 @@ async function removeMessage(messageId) {
     return showMessage("No podés eliminar este mensaje", "error");
   }
 
-  const confirmed = confirm("¿Eliminar este mensaje?");
+  const textContainer = document.getElementById(`text-${messageId}`);
 
-  if (!confirmed) return;
+  const footerContainer = document.getElementById(`footer-${messageId}`);
+  if (footerContainer) footerContainer.style.display = "none";
 
-  await deleteMessage(messageId);
+  textContainer.innerHTML = `
+    <div class="delete-confirmation-text">¿Eliminar este mensaje?</div>
+    <div class="edit-buttons">
+      <button
+        class="delete-confirm-btn"
+        onclick="confirmDeleteMessage('${messageId}')">
+        Eliminar
+      </button>
+      <button
+        class="edit-cancel-btn"
+        onclick="loadMessages()">
+        Cancelar
+      </button>
+    </div>
+  `;
 
+  const messageElement = textContainer.closest(".message");
+  
+  setTimeout(() => {
+    messageElement.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  }, 50);
+}
+
+async function confirmDeleteMessage(messageId) {
+  await updateMessage(messageId, "");
+  
   showMessage("Mensaje eliminado", "ok");
 }
 
 function loadMessages() {
-  const currentUser = getCurrentUser();
-
   const container = document.getElementById("messages");
 
   if (unsubscribeMessages) {
@@ -662,7 +699,6 @@ function loadMessages() {
 
   unsubscribeMessages = subscribeToMessages((messages) => {
     const currentUser = getCurrentUser();
-
     container.innerHTML = "";
 
     const filteredMessages = messages.filter(
@@ -677,17 +713,18 @@ function loadMessages() {
       latestMessage &&
       latestMessage.id !== lastNotificationMessageId &&
       latestMessage.from !== currentUser.id &&
-      latestMessage.from !== currentChatUser
+      latestMessage.to === currentUser.id
     ) {
       lastNotificationMessageId = latestMessage.id;
 
-      getUsers().then((users) => {
-        const sender = users.find((u) => u.id === latestMessage.from);
-
-        if (sender) {
-          showMessage(`Nuevo mensaje de ${sender.nickname}`, "ok");
-        }
-      });
+      if (latestMessage.from !== currentChatUser) {
+        getUsers().then((users) => {
+          const sender = users.find((u) => u.id === latestMessage.from);
+          if (sender) {
+            showMessage(`Nuevo mensaje de ${sender.nickname}`, "ok");
+          }
+        });
+      }
     }
 
     filteredMessages.forEach((m) => {
@@ -718,40 +755,54 @@ function createMessageElement(message, currentUser) {
     message.from === currentUser.id ? "me" : "other",
   );
 
+  const isDeleted = !message.text || message.text.trim() === "";
+
+  const messageContent = isDeleted 
+    ? `<span class="deleted-text-style">Mensaje eliminado</span>` 
+    : message.text;
+
   div.innerHTML = `
-  <div class="message-text" id="text-${message.id}">
-    ${message.text}
-  </div>
+    <div class="message-text" id="text-${message.id}">
+      ${messageContent}
+    </div>
 
-  ${
-    message.from === currentUser.id
-      ? `
-        <div class="message-actions">
+    ${
+      message.from === currentUser.id
+        ? `
+          <div class="message-footer" id="footer-${message.id}">
 
-          <div class="message-status">
-            ${message.edited ? "editado " : ""}
-            ${message.read ? "✓✓" : "✓"}
+            <div class="message-status">
+              ${message.edited && !isDeleted ? "editado" : ""}
+              ${message.read ? " ✓✓" : " ✓"}
+            </div>
+
+            ${!isDeleted ? `
+              <div class="message-actions">
+                <img
+                  class="edit-icon"
+                  src="assets/icons/editar.png"
+                  alt="Editar"
+                  title="Editar mensaje"
+                  onclick="editMessage('${message.id}')">
+
+                <img
+                  class="delete-icon"
+                  src="assets/icons/eliminar.png"
+                  alt="Eliminar"
+                  title="Eliminar mensaje"
+                  onclick="removeMessage('${message.id}')">
+              </div>
+            ` : ''}
+
           </div>
-
-          <img
-            class="edit-icon"
-            src="assets/icons/editar.png"
-            alt="Editar"
-            title="Editar mensaje"
-            onclick="editMessage('${message.id}')">
-
-          <img
-            class="delete-icon"
-            src="assets/icons/eliminar.png"
-            alt="Eliminar"
-            title="Eliminar mensaje"
-            onclick="removeMessage('${message.id}')">
-
-        </div>
-      `
-      : ""
-  }
-`;
+        `
+        : `
+          <div class="message-status">
+            ${message.edited && !isDeleted ? "editado" : ""}
+          </div>
+        `
+    }
+  `;
 
   return div;
 }
