@@ -1,3 +1,5 @@
+/* ---------------- CONFIGURACIÓN E INICIALIZACIÓN DE FIREBASE ---------------- */
+
 const firebaseScripts = [
   "https://www.gstatic.com/firebasejs/12.1.0/firebase-app-compat.js",
   "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore-compat.js",
@@ -40,21 +42,55 @@ async function initFirebase() {
   firestore = firebase.firestore();
 
   firestore.enablePersistence().catch((err) => {
-    if (err.code == 'failed-precondition') {
+    if (err.code == "failed-precondition") {
       console.warn("La persistencia falló: Múltiples pestañas abiertas.");
-    } else if (err.code == 'unimplemented') {
+    } else if (err.code == "unimplemented") {
       console.warn("El navegador no soporta persistencia offline.");
     } else {
-      console.error("Error al activar persistencia offline de Firestore:", err.code);
+      console.error(
+        "Error al activar persistencia offline de Firestore:",
+        err.code,
+      );
     }
   });
 
   firebaseReady = true;
 
-  console.log("Firebase listo");
+  console.log("Firebase listo con soporte Offline");
 }
 
-// ---------------- USERS ----------------
+/* ---------------- MÓDULO DE AUTENTICACIÓN ---------------- */
+
+async function loginUser(email, password) {
+  const users = await getUsersWithPassword();
+
+  const user = users.find((u) => u.email === email && u.password === password);
+
+  if (!user) {
+    return { error: "Credenciales incorrectas" };
+  }
+
+  localStorage.setItem(
+    "currentUser",
+    JSON.stringify({
+      id: user.id,
+      email: user.email,
+      nickname: user.nickname,
+    }),
+  );
+
+  return { success: true };
+}
+
+function getCurrentUser() {
+  return JSON.parse(localStorage.getItem("currentUser"));
+}
+
+function logoutUser() {
+  localStorage.removeItem("currentUser");
+}
+
+/* ---------------- MÓDULO DE GESTIÓN DE USUARIOS / PERFILES ---------------- */  
 
 async function getUsers() {
   const snapshot = await firestore.collection("users").get();
@@ -115,38 +151,25 @@ async function deleteUser(userId) {
   return { success: true };
 }
 
-// ---------------- LOGIN ----------------
+/* ---------------- MÓDULO DE MENSAJERÍA (TIEMPO REAL & OPERACIONES) ---------------- */
 
-async function loginUser(email, password) {
-  const users = await getUsersWithPassword();
+function subscribeToMessages(callback) {
+  return firestore
+    .collection("messages")
+    .orderBy("createdAt")
+    .onSnapshot((snapshot) => {
+      const messages = [];
 
-  const user = users.find((u) => u.email === email && u.password === password);
+      snapshot.forEach((doc) => {
+        messages.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
 
-  if (!user) {
-    return { error: "Credenciales incorrectas" };
-  }
-
-  localStorage.setItem(
-    "currentUser",
-    JSON.stringify({
-      id: user.id,
-      email: user.email,
-      nickname: user.nickname,
-    }),
-  );
-
-  return { success: true };
+      callback(messages);
+    });
 }
-
-function getCurrentUser() {
-  return JSON.parse(localStorage.getItem("currentUser"));
-}
-
-function logoutUser() {
-  localStorage.removeItem("currentUser");
-}
-
-// ---------------- MESSAGES ----------------
 
 async function getMessages() {
   const snapshot = await firestore
@@ -208,22 +231,4 @@ async function markMessagesAsRead(fromUserId) {
   });
 
   await batch.commit();
-}
-
-function subscribeToMessages(callback) {
-  return firestore
-    .collection("messages")
-    .orderBy("createdAt")
-    .onSnapshot((snapshot) => {
-      const messages = [];
-
-      snapshot.forEach((doc) => {
-        messages.push({
-          id: doc.id,
-          ...doc.data(),
-        });
-      });
-
-      callback(messages);
-    });
 }

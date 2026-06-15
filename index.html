@@ -1,12 +1,11 @@
 <!doctype html>
 <html lang="es">
+
   <head>
     <meta charset="UTF-8" />
     <title>App Mensajería</title>
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#1976d2" />
-
     <link rel="manifest" href="manifest.json" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
@@ -17,7 +16,6 @@
 
       <section id="loginView" class="view">
         <h2>Login</h2>
-
         <input
           type="email"
           id="loginEmail"
@@ -32,7 +30,6 @@
           placeholder="Contraseña"
           required
         />
-
         <div class="button-group">
           <button class="btn" onclick="login()">Ingresar</button>
           <button class="btn" onclick="showRegister()">Registrarse</button>
@@ -41,7 +38,6 @@
 
       <section id="registerView" class="view hidden">
         <h2>Crear cuenta</h2>
-
         <div class="photo-container">
           <label class="photo-label" for="registerPhoto">
             <img id="photoPreview" src="assets/images/foto.png" alt="Preview" />
@@ -49,7 +45,6 @@
           </label>
           <input type="file" id="registerPhoto" accept="image/*" hidden />
         </div>
-
         <input type="email" id="registerEmail" placeholder="Email" required />
         <input
           type="password"
@@ -65,50 +60,37 @@
           required
         />
         <input type="text" id="registerNickname" placeholder="Apodo" required />
-
         <div class="button-group">
           <button class="btn" onclick="register()">Crear cuenta</button>
-          <button class="btn btn-secondary" onclick="backToLogin()">
-            Volver
-          </button>
+          <button class="btn btn-secondary" onclick="backToLogin()">Volver</button>
         </div>
       </section>
 
       <section id="editProfileView" class="view hidden">
         <h2>Editar perfil</h2>
-
         <div class="photo-container">
           <label class="photo-label">
             <img id="editPhotoPreview" src="assets/images/foto.png" />
             <span class="photo-text">Foto de perfil</span>
           </label>
-
           <input type="file" id="editPhoto" accept="image/*" hidden />
         </div>
-
         <input type="email" id="editProfileEmail" placeholder="Email" />
-
         <input type="text" id="editProfileName" placeholder="Nombre" />
-
         <input type="text" id="editProfileLastName" placeholder="Apellido" />
-
         <input type="text" id="editProfileNickname" placeholder="Apodo" />
-
         <input
           type="password"
           id="editProfilePassword"
           placeholder="Nueva contraseña"
         />
-
         <input
           type="password"
           id="editConfirmPassword"
           placeholder="Confirmar contraseña"
         />
-
         <div class="button-group">
           <button class="btn" onclick="saveProfile()">Guardar</button>
-
           <button class="btn btn-secondary" onclick="showChat()">Volver</button>
         </div>
       </section>
@@ -119,7 +101,6 @@
             <h2 class="title">Contactos</h2>
             <button class="btn btn-secondary" onclick="logout()">Logout</button>
           </header>
-
           <div class="chat-container">
             <aside class="sidebar">
               <div class="profile-card">
@@ -129,7 +110,6 @@
                     src="assets/images/foto.png"
                     title="Cambiar foto de perfil"
                   />
-
                   <input
                     type="file"
                     id="profilePhotoInput"
@@ -137,32 +117,23 @@
                     hidden
                   />
                 </div>
-
                 <h3 id="profileNickname">Usuario</h3>
-
                 <select id="profileStatus">
                   <option value="Disponible">🟢 Disponible</option>
                   <option value="Ocupado">🔴 Ocupado</option>
                   <option value="Ausente">🟡 Ausente</option>
                   <option value="No molestar">⛔ No molestar</option>
                 </select>
-
-                <button class="btn" onclick="showEditProfile()">
-                  Editar perfil
-                </button>
+                <button class="btn" onclick="showEditProfile()">Editar perfil</button>
               </div>
-
               <div id="usersList"></div>
             </aside>
-
             <main class="chat-area">
               <div id="chatBox" class="hidden">
                 <div id="chatUserInfo" class="chat-user-info">
                   Seleccioná un contacto
                 </div>
-
                 <div id="messages"></div>
-
                 <div class="message-input">
                   <input id="messageInput" placeholder="Mensaje" required />
                   <button class="btn" id="sendBtn">Enviar</button>
@@ -176,7 +147,6 @@
 
     <script src="js/db.js"></script>
     <script src="js/app.js"></script>
-
     <script>
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker
@@ -186,4 +156,5 @@
       }
     </script>
   </body>
+  
 </html>

@@ -1,6 +1,6 @@
 {
     "name": "App Mensajería",
-    "short_name": "Mensaje",
+    "short_name": "Mensajes",
     "start_url": "./index.html",
     "display": "standalone",
     "background_color": "#F4F6FA",
