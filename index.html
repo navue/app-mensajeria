@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="es">
-
   <head>
     <meta charset="UTF-8" />
     <title>App Mensajería</title>
@@ -62,7 +61,9 @@
         <input type="text" id="registerNickname" placeholder="Apodo" required />
         <div class="button-group">
           <button class="btn" onclick="register()">Crear cuenta</button>
-          <button class="btn btn-secondary" onclick="backToLogin()">Volver</button>
+          <button class="btn btn-secondary" onclick="backToLogin()">
+            Volver
+          </button>
         </div>
       </section>
 
@@ -124,7 +125,15 @@
                   <option value="Ausente">🟡 Ausente</option>
                   <option value="No molestar">⛔ No molestar</option>
                 </select>
-                <button class="btn" onclick="showEditProfile()">Editar perfil</button>
+                <button class="btn" onclick="showEditProfile()">
+                  Editar perfil
+                </button>
+                <button
+                  class="btn btn-danger"
+                  onclick="showDeleteProfileModal()"
+                >
+                  Eliminar perfil
+                </button>
               </div>
               <div id="usersList"></div>
             </aside>
@@ -145,6 +154,33 @@
       </section>
     </div>
 
+    <div id="deleteProfileModal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Eliminar perfil</h3>
+
+        <p>
+          ¿Estás seguro de que quieres eliminar tu perfil?
+          Ingresá tu contraseña para confirmar.
+        </p>
+
+        <input
+          type="password"
+          id="deleteProfilePassword"
+          placeholder="Contraseña"
+        />
+
+        <div class="modal-buttons">
+          <button class="btn btn-danger" onclick="confirmDeleteProfile()">
+            Eliminar
+          </button>
+
+          <button class="btn btn-secondary" onclick="closeDeleteProfileModal()">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="js/db.js"></script>
     <script src="js/app.js"></script>
     <script>
@@ -156,5 +192,4 @@
       }
     </script>
   </body>
-  
 </html>

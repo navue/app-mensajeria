@@ -62,6 +62,28 @@ select {
   flex: 1;
 }
 
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.modal-buttons .btn {
+  flex: 1;
+  height: 50px;
+  margin: 0;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+  margin-top: 10px;
+}
+
+.btn-danger:hover {
+  background: #bd2130;
+}
+
 /* ---------------- LAYOUT GENERAL ---------------- */
 
 .app-container {
@@ -125,8 +147,8 @@ select {
 .profile-card {
   background: white;
   border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 15px;
+  padding: 12px;
+  margin-bottom: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
@@ -136,7 +158,7 @@ select {
 .profile-photo-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
 #profilePhoto {
@@ -154,7 +176,7 @@ select {
 }
 
 #profileNickname {
-  margin: 10px 0 5px;
+  margin: 0px 0;
   font-size: 18px;
 }
 
@@ -173,10 +195,12 @@ select {
   cursor: pointer;
   outline: none;
   box-shadow: none;
+  margin-bottom: 0px;
+  margin-top: 0px;
 }
 
 #saveProfileBtn {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   font-size: 14px;
   width: 100%;
   height: 45px;
@@ -192,7 +216,7 @@ select {
 .chat-card {
   width: 100%;
   max-width: 900px;
-  height: 80vh;
+  height: 90vh;
   display: flex;
   flex-direction: column;
   background: rgba(255, 255, 255, 0.95);
@@ -237,6 +261,9 @@ select {
   padding: 15px;
   background: #f8f9fa;
   border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .user-item {
@@ -273,6 +300,21 @@ select {
 .user-text p {
   margin: 0;
   font-size: 14px;
+}
+
+#usersList {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+#usersList::-webkit-scrollbar {
+  width: 6px;
+}
+
+#usersList::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
 }
 
 /* ---------------- MENSAJES ---------------- */
@@ -485,4 +527,28 @@ select {
 
 #globalMessage.error {
   background: #dc3545;
+}
+
+/* ---------------- MODAL ELIMINAR PERFIL ---------------- */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  width: 320px;
+  box-sizing: border-box;
 }

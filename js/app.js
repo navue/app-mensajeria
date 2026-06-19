@@ -135,10 +135,13 @@ async function login() {
   const result = await loginUser(email, password);
 
   if (result.error) {
+    if (result.error === "La cuenta fue eliminada") {
+      clearLoginForm();
+    }
     showMessage(result.error, "error");
-  } else {
-    await showChat();
+    return;
   }
+  await showChat();
 }
 
 async function register() {
@@ -360,7 +363,7 @@ async function loadUsers() {
   const container = document.getElementById("usersList");
   container.innerHTML = "";
   const sortedUsers = users
-    .filter((u) => u.id !== currentUser.id)
+    .filter((u) => u.id !== currentUser.id && u.active !== false)
     .map((user) => {
       const conversationMessages = messages.filter(
         (m) =>
@@ -727,4 +730,46 @@ function showMessage(text, type = "ok") {
   msg._timeout = setTimeout(() => {
     msg.className = "";
   }, 2500);
+}
+
+/* ---------------- MODAL ELIMINAR PERFIL ---------------- */
+
+function showDeleteProfileModal() {
+  document.getElementById("deleteProfileModal").classList.remove("hidden");
+
+  document.getElementById("deleteProfilePassword").value = "";
+}
+
+function closeDeleteProfileModal() {
+  document.getElementById("deleteProfileModal").classList.add("hidden");
+}
+
+async function confirmDeleteProfile() {
+  const password = document
+    .getElementById("deleteProfilePassword")
+    .value.trim();
+
+  if (!password) {
+    return showMessage("Ingresá tu contraseña", "error");
+  }
+
+  const currentUser = getCurrentUser();
+
+  const users = await getUsersWithPassword();
+
+  const user = users.find(
+    (u) => u.id === currentUser.id && u.password === password,
+  );
+
+  if (!user) {
+    return showMessage("Contraseña incorrecta", "error");
+  }
+
+  await deleteUser(currentUser.id);
+
+  logout();
+
+  closeDeleteProfileModal();
+
+  showMessage("Perfil eliminado correctamente", "ok");
 }

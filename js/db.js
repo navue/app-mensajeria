@@ -70,6 +70,12 @@ async function loginUser(email, password) {
     return { error: "Credenciales incorrectas" };
   }
 
+    if (user.active === false) {
+    return {
+      error: "La cuenta fue eliminada",
+    };
+  }
+
   localStorage.setItem(
     "currentUser",
     JSON.stringify({
@@ -90,7 +96,7 @@ function logoutUser() {
   localStorage.removeItem("currentUser");
 }
 
-/* ---------------- MÓDULO DE GESTIÓN DE USUARIOS / PERFILES ---------------- */  
+/* ---------------- MÓDULO DE GESTIÓN DE USUARIOS / PERFILES ---------------- */
 
 async function getUsers() {
   const snapshot = await firestore.collection("users").get();
@@ -146,9 +152,10 @@ async function updateUser(userId, updatedData) {
 }
 
 async function deleteUser(userId) {
-  await firestore.collection("users").doc(userId).delete();
-
-  return { success: true };
+  await updateUser(userId, {
+    active: false,
+    deletedAt: Date.now(),
+  });
 }
 
 /* ---------------- MÓDULO DE MENSAJERÍA (TIEMPO REAL & OPERACIONES) ---------------- */
