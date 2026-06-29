@@ -374,6 +374,13 @@ select {
   text-align: right;
 }
 
+.message-date {
+  font-size: 11px;
+  opacity: 0.7;
+  text-align: right;
+  margin-top: 4px;
+}
+
 /* ---------------- MENSAJES (INPUT) ---------------- */
 
 .message-input {

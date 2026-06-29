@@ -89,33 +89,54 @@ async function showChat() {
   await loadProfile();
   await loadUsers();
   const currentUser = getCurrentUser();
+  const users = await getUsers();
   const messages = await getMessages();
+
   const userMessages = messages.filter(
     (m) => m.from === currentUser.id || m.to === currentUser.id,
   );
 
   if (userMessages.length > 0) {
     const lastMessage = userMessages[userMessages.length - 1];
-    currentChatUser =
+
+    const lastChatUser =
       lastMessage.from === currentUser.id ? lastMessage.to : lastMessage.from;
-    localStorage.setItem("currentChatUser", currentChatUser);
-    const chatBox = document.getElementById("chatBox");
-    chatBox.classList.remove("hidden");
-    chatBox.style.display = "flex";
-    await updateChatHeader(currentChatUser);
-    loadMessages();
-    return;
+
+    const userExists = users.find(
+      (u) => u.id === lastChatUser && u.active !== false,
+    );
+
+    if (userExists) {
+      currentChatUser = lastChatUser;
+      localStorage.setItem("currentChatUser", currentChatUser);
+
+      const chatBox = document.getElementById("chatBox");
+      chatBox.classList.remove("hidden");
+      chatBox.style.display = "flex";
+      await updateChatHeader(currentChatUser);
+      loadMessages();
+      return;
+    }
   }
 
   const savedChatUser = localStorage.getItem("currentChatUser");
 
   if (savedChatUser) {
-    currentChatUser = savedChatUser;
-    const chatBox = document.getElementById("chatBox");
-    chatBox.classList.remove("hidden");
-    chatBox.style.display = "flex";
-    await updateChatHeader(currentChatUser);
-    loadMessages();
+    const userExists = users.find(
+      (u) => u.id === savedChatUser && u.active !== false,
+    );
+
+    if (userExists) {
+      currentChatUser = savedChatUser;
+
+      const chatBox = document.getElementById("chatBox");
+      chatBox.classList.remove("hidden");
+      chatBox.style.display = "flex";
+      await updateChatHeader(currentChatUser);
+      loadMessages();
+    } else {
+      localStorage.removeItem("currentChatUser");
+    }
   }
 }
 
@@ -513,6 +534,10 @@ function createMessageElement(message, currentUser) {
       ${messageContent}
     </div>
 
+    <div class="message-date">
+      ${formatMessageDate(message.createdAt)}
+    </div>
+
     ${
       message.from === currentUser.id
         ? `
@@ -643,6 +668,20 @@ async function removeMessage(messageId) {
 async function confirmDeleteMessage(messageId) {
   await updateMessage(messageId, "");
   showMessage("Mensaje eliminado", "ok");
+}
+
+function formatMessageDate(timestamp) {
+  if (!timestamp) return "";
+
+  const date = new Date(timestamp);
+
+  return date.toLocaleString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 /* ---------------- FOTOS ---------------- */
