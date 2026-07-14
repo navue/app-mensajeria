@@ -38,14 +38,11 @@
       <section id="registerView" class="view hidden">
         <h2>Crear cuenta</h2>
         <div class="photo-container">
-          <img
-            id="photoPreview"
-            src="assets/images/foto.png"
-            alt="Preview"
-            class="photo-label"
-            onclick="document.getElementById('registerPhoto').click()"
-          />
-          <span class="photo-text">Foto (opcional)</span>
+          <label class="photo-label" id="registerPhotoLabel">
+            <img id="photoPreview" src="assets/images/foto.png" alt="Preview" />
+            <span class="photo-text">Foto (opcional)</span>
+          </label>
+
           <input type="file" id="registerPhoto" accept="image/*" hidden />
         </div>
         <input type="email" id="registerEmail" placeholder="Email" required />

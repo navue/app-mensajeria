@@ -19,6 +19,7 @@ window.onload = async () => {
 function initEvents() {
   const input = document.getElementById("registerPhoto");
   const sendBtn = document.getElementById("sendBtn");
+  const registerPhotoLabel = document.getElementById("registerPhotoLabel");
   const editPhotoPreview = document.getElementById("editPhotoPreview");
   const editPhotoInput = document.getElementById("editPhoto");
   const editInput = document.getElementById("editPhoto");
@@ -29,6 +30,9 @@ function initEvents() {
 
   input?.addEventListener("change", handlePhotoChange);
   sendBtn?.addEventListener("pointerdown", sendMessage);
+  registerPhotoLabel?.addEventListener("click", () => {
+    document.getElementById("registerPhoto").click();
+  });
   editPhotoPreview?.addEventListener("pointerdown", () => {
     editPhotoInput.click();
   });
