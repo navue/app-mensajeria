@@ -14,7 +14,7 @@
       <div id="globalMessage"></div>
 
       <section id="loginView" class="view">
-        <h2>Login</h2>
+        <h2>Iniciar Sesión</h2>
         <input
           type="email"
           id="loginEmail"
@@ -100,7 +100,7 @@
         <div class="chat-card">
           <header class="chat-header">
             <h2 class="title">Contactos</h2>
-            <button class="btn btn-secondary" onclick="logout()">Logout</button>
+            <button class="btn btn-secondary" onclick="logout()">Cerrar Sesión</button>
           </header>
           <div class="chat-container">
             <aside class="sidebar">
@@ -139,8 +139,13 @@
             </aside>
             <main class="chat-area">
               <div id="chatBox" class="hidden">
-                <div id="chatUserInfo" class="chat-user-info">
-                  Seleccioná un contacto
+                <div class="chat-header-info">
+                  <div id="chatUserInfo" class="chat-user-info">
+                    Seleccioná un contacto
+                  </div>
+                  <button id="blockUserBtn" class="btn btn-danger">
+                    Bloquear
+                  </button>
                 </div>
                 <div id="messages"></div>
                 <div class="message-input">
@@ -159,8 +164,8 @@
         <h3>Eliminar perfil</h3>
 
         <p>
-          ¿Estás seguro de que quieres eliminar tu perfil?
-          Ingresá tu contraseña para confirmar.
+          ¿Estás seguro de que quieres eliminar tu perfil? Ingresá tu contraseña
+          para confirmar.
         </p>
 
         <input

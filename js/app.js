@@ -26,6 +26,7 @@ function initEvents() {
   const profileStatus = document.getElementById("profileStatus");
   const profilePhoto = document.getElementById("profilePhoto");
   const profilePhotoInput = document.getElementById("profilePhotoInput");
+  const blockUserBtn = document.getElementById("blockUserBtn");
 
   input?.addEventListener("change", handlePhotoChange);
   sendBtn?.addEventListener("pointerdown", sendMessage);
@@ -51,6 +52,7 @@ function initEvents() {
     profilePhotoInput.click();
   });
   profilePhotoInput?.addEventListener("change", updateProfilePhoto);
+  blockUserBtn?.addEventListener("pointerdown", toggleBlockUser);
 }
 
 /* ---------------- NAVEGACION ---------------- */
@@ -384,7 +386,7 @@ async function loadUsers() {
   const container = document.getElementById("usersList");
   container.innerHTML = "";
   const sortedUsers = users
-    .filter((u) => u.id !== currentUser.id && u.active !== false)
+    .filter((user) => user.id !== currentUser.id && user.active !== false)
     .map((user) => {
       const conversationMessages = messages.filter(
         (m) =>
@@ -409,25 +411,38 @@ async function loadUsers() {
 function createUserElement(user) {
   const div = document.createElement("div");
   div.classList.add("user-item");
-  const photo =
-    user.photo && user.photo !== "undefined"
+
+  const currentUser = getCurrentUser();
+  const blockedMe = (user.blockedUsers || []).includes(currentUser.id);
+  const photo = blockedMe
+    ? "assets/images/foto.png"
+    : user.photo && user.photo !== "undefined"
       ? user.photo
       : "assets/images/foto.png";
+
+  const nickname = blockedMe ? "Usuario" : user.nickname;
   div.innerHTML = `
     <div class="user-info">
       <img src="${photo}">
       <div class="user-text">
-        <p><b>${user.nickname}</b></p>
+        <p><b>${nickname}</b></p>
       </div>
     </div>
   `;
+
   div.addEventListener("pointerdown", () => {
     startChat(user.id);
   });
+
   return div;
 }
 
 async function startChat(userId) {
+  const users = await getUsers();
+  const currentUser = users.find((u) => u.id === getCurrentUser().id);
+  if (currentUser.blockedUsers?.includes(userId)) {
+    return;
+  }
   currentChatUser = userId;
   localStorage.setItem("currentChatUser", userId);
   await markMessagesAsRead(userId);
@@ -441,13 +456,16 @@ async function startChat(userId) {
 async function updateChatHeader(userId) {
   const users = await getUsers();
   const user = users.find((u) => u.id === userId);
+  const currentUser = getCurrentUser();
+  const blockedMe = (user.blockedUsers || []).includes(currentUser.id);
   const chatUserInfo = document.getElementById("chatUserInfo");
-
   if (!user) {
     chatUserInfo.textContent = "Seleccioná un contacto";
     return;
   }
-  chatUserInfo.textContent = `Hablando con ${user.nickname}`;
+  chatUserInfo.textContent = blockedMe
+    ? "Hablando con Usuario"
+    : `Hablando con ${user.nickname}`;
 }
 
 /* ---------------- MENSAJES ---------------- */
@@ -480,11 +498,16 @@ function loadMessages() {
   unsubscribeMessages = subscribeToMessages((messages) => {
     const currentUser = getCurrentUser();
     container.innerHTML = "";
-    const filteredMessages = messages.filter(
-      (m) =>
+    const filteredMessages = messages.filter((m) => {
+      if (m.blocked && m.to === currentUser.id) {
+        return false;
+      }
+
+      return (
         (m.from === currentUser.id && m.to === currentChatUser) ||
-        (m.from === currentChatUser && m.to === currentUser.id),
-    );
+        (m.from === currentChatUser && m.to === currentUser.id)
+      );
+    });
     const latestMessage = messages[messages.length - 1];
     if (
       latestMessage &&
@@ -811,4 +834,22 @@ async function confirmDeleteProfile() {
   closeDeleteProfileModal();
 
   showMessage("Perfil eliminado correctamente", "ok");
+}
+
+/* ---------------- BLOQUEAR USUARIO ---------------- */
+
+async function toggleBlockUser() {
+  if (!currentChatUser) return;
+  const users = await getUsers();
+  const currentUser = users.find((u) => u.id === getCurrentUser().id);
+  const isBlocked = currentUser.blockedUsers?.includes(currentChatUser);
+  if (isBlocked) {
+    await unblockUser(currentChatUser);
+    showMessage("Usuario desbloqueado", "ok");
+  } else {
+    await blockUser(currentChatUser);
+    showMessage("Usuario bloqueado", "ok");
+  }
+  await loadUsers();
+  await updateChatHeader(currentChatUser);
 }

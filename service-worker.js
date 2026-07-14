@@ -7,7 +7,7 @@ const urlsToCache = [
   "./js/db.js",
   "./assets/images/fondo.jpg",
   "./assets/images/foto.png",
-  "./offline.html"
+  "./offline.html",
 ];
 
 /* ---------------- INSTALL ---------------- */
@@ -18,7 +18,7 @@ self.addEventListener("install", (event) => {
     caches.open(CACHE_NAME).then((cache) => {
       console.log("Cacheando archivos...");
       return cache.addAll(urlsToCache);
-    })
+    }),
   );
 });
 
@@ -33,27 +33,33 @@ self.addEventListener("activate", (event) => {
             console.log("Borrando cache viejo:", cache);
             return caches.delete(cache);
           }
-        })
+        }),
       );
-    })
+    }),
   );
   self.clients.claim();
 });
 
 /* ---------------- FETCH ---------------- */
 self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") {
+    return;
+  }
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, response.clone());
-          return response;
-        });
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, copy);
+          });
+        }
+        return response;
       })
-      .catch(() => {
-        return caches.match(event.request).then((response) => {
-          return response || caches.match("./offline.html");
-        });
-      })
+      .catch(async () => {
+        return (
+          (await caches.match(event.request)) || caches.match("./offline.html")
+        );
+      }),
   );
 });

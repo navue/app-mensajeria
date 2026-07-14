@@ -193,12 +193,16 @@ async function getMessages() {
 async function addMessage(toUserId, text) {
   const currentUser = getCurrentUser();
 
+  const users = await getUsers();
+  const receiver = users.find((u) => u.id === toUserId);
+
   await firestore.collection("messages").add({
     from: currentUser.id,
     to: toUserId,
     text,
     createdAt: Date.now(),
     read: false,
+    blocked: receiver?.blockedUsers?.includes(currentUser.id) || false,
   });
 
   return { success: true };
@@ -238,4 +242,23 @@ async function markMessagesAsRead(fromUserId) {
   });
 
   await batch.commit();
+}
+
+/* ---------------- MÓDULO DE SEGURIDAD ---------------- */
+
+async function blockUser(userIdToBlock) {
+  const currentUser = getCurrentUser();
+
+  const userRef = firestore.collection("users").doc(currentUser.id);
+
+  await userRef.update({
+    blockedUsers: firebase.firestore.FieldValue.arrayUnion(userIdToBlock)
+  });
+}
+
+async function unblockUser(userIdToUnblock) {
+  const currentUser = getCurrentUser();
+  await firestore.collection("users").doc(currentUser.id).update({
+    blockedUsers: firebase.firestore.FieldValue.arrayRemove(userIdToUnblock),
+  });
 }
