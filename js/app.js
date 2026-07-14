@@ -455,16 +455,21 @@ async function startChat(userId) {
 async function updateChatHeader(userId) {
   const users = await getUsers();
   const user = users.find((u) => u.id === userId);
-  const currentUser = getCurrentUser();
-  const blockedMe = (user.blockedUsers || []).includes(currentUser.id);
+  const currentUser = users.find((u) => u.id === getCurrentUser().id);
   const chatUserInfo = document.getElementById("chatUserInfo");
+  const blockBtn = document.getElementById("blockUserBtn");
   if (!user) {
     chatUserInfo.textContent = "Seleccioná un contacto";
+    blockBtn.style.display = "none";
     return;
   }
+  const blockedMe = (user.blockedUsers || []).includes(currentUser.id);
+  const iBlocked = (currentUser.blockedUsers || []).includes(userId);
   chatUserInfo.textContent = blockedMe
     ? "Hablando con Usuario"
     : `Hablando con ${user.nickname}`;
+  blockBtn.style.display = "block";
+  blockBtn.textContent = iBlocked ? "Desbloquear" : "Bloquear";
 }
 
 /* ---------------- MENSAJES ---------------- */
