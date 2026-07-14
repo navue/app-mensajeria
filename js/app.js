@@ -19,7 +19,6 @@ window.onload = async () => {
 function initEvents() {
   const input = document.getElementById("registerPhoto");
   const sendBtn = document.getElementById("sendBtn");
-  const photo = document.getElementById("photoPreview");
   const editPhotoPreview = document.getElementById("editPhotoPreview");
   const editPhotoInput = document.getElementById("editPhoto");
   const editInput = document.getElementById("editPhoto");
@@ -30,10 +29,6 @@ function initEvents() {
 
   input?.addEventListener("change", handlePhotoChange);
   sendBtn?.addEventListener("pointerdown", sendMessage);
-  photo?.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    handlePhotoClick();
-  });
   editPhotoPreview?.addEventListener("pointerdown", () => {
     editPhotoInput.click();
   });
@@ -723,15 +718,6 @@ function handleProfilePhotoChange(e) {
   readFileAsBase64(file, (base64) => {
     document.getElementById("profilePhoto").src = base64;
   });
-}
-
-function handlePhotoClick() {
-  const input = document.getElementById("registerPhoto");
-  if (input.files?.length > 0) {
-    removePhoto();
-  } else {
-    input.click();
-  }
 }
 
 function removePhoto() {

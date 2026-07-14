@@ -38,10 +38,14 @@
       <section id="registerView" class="view hidden">
         <h2>Crear cuenta</h2>
         <div class="photo-container">
-          <label class="photo-label" for="registerPhoto">
-            <img id="photoPreview" src="assets/images/foto.png" alt="Preview" />
-            <span class="photo-text">Foto (opcional)</span>
-          </label>
+          <img
+            id="photoPreview"
+            src="assets/images/foto.png"
+            alt="Preview"
+            class="photo-label"
+            onclick="document.getElementById('registerPhoto').click()"
+          />
+          <span class="photo-text">Foto (opcional)</span>
           <input type="file" id="registerPhoto" accept="image/*" hidden />
         </div>
         <input type="email" id="registerEmail" placeholder="Email" required />
@@ -100,7 +104,9 @@
         <div class="chat-card">
           <header class="chat-header">
             <h2 class="title">Contactos</h2>
-            <button class="btn btn-secondary" onclick="logout()">Cerrar Sesión</button>
+            <button class="btn btn-secondary" onclick="logout()">
+              Cerrar Sesión
+            </button>
           </header>
           <div class="chat-container">
             <aside class="sidebar">
