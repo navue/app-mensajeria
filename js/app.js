@@ -4,6 +4,8 @@ let editProfilePhotoBase64 = null;
 let currentChatUser = null;
 let unsubscribeMessages = null;
 let lastNotificationMessageId = null;
+let cachedUsers = [];
+let cachedMessages = [];
 
 /* ---------------- INICIALIZACION ---------------- */
 
@@ -13,6 +15,13 @@ window.onload = async () => {
   user ? showChat() : showLogin();
   initEvents();
 };
+
+async function loadInitialData() {
+  const [users, messages] = await Promise.all([getUsers(), getMessages()]);
+
+  cachedUsers = users;
+  cachedMessages = messages;
+}
 
 /* ---------------- EVENTOS ---------------- */
 
@@ -87,30 +96,26 @@ async function showEditProfile() {
 async function showChat() {
   showView("chatView");
   document.querySelector(".app-container").classList.add("chat-mode");
+  document.getElementById("chatView").style.visibility = "hidden";
+  await loadInitialData();
   await loadProfile();
   await loadUsers();
   const currentUser = getCurrentUser();
   const users = await getUsers();
   const messages = await getMessages();
-
   const userMessages = messages.filter(
     (m) => m.from === currentUser.id || m.to === currentUser.id,
   );
-
   if (userMessages.length > 0) {
     const lastMessage = userMessages[userMessages.length - 1];
-
     const lastChatUser =
       lastMessage.from === currentUser.id ? lastMessage.to : lastMessage.from;
-
     const userExists = users.find(
       (u) => u.id === lastChatUser && u.active !== false,
     );
-
     if (userExists) {
       currentChatUser = lastChatUser;
       localStorage.setItem("currentChatUser", currentChatUser);
-
       const chatBox = document.getElementById("chatBox");
       chatBox.classList.remove("hidden");
       chatBox.style.display = "flex";
@@ -119,9 +124,7 @@ async function showChat() {
       return;
     }
   }
-
   const savedChatUser = localStorage.getItem("currentChatUser");
-
   if (savedChatUser) {
     const userExists = users.find(
       (u) => u.id === savedChatUser && u.active !== false,
@@ -139,6 +142,7 @@ async function showChat() {
       localStorage.removeItem("currentChatUser");
     }
   }
+  document.getElementById("chatView").style.visibility = "visible";
 }
 
 /* ---------------- AUTENTICACION ---------------- */
@@ -238,7 +242,7 @@ function logout() {
 async function loadProfile() {
   const currentUser = getCurrentUser();
   if (!currentUser) return;
-  const users = await getUsers();
+  const users = cachedUsers;
   const fullUser = users.find((u) => u.id === currentUser.id);
   if (!fullUser) return;
   document.getElementById("profileNickname").textContent =
@@ -290,6 +294,12 @@ async function updateProfilePhoto(e) {
     await updateUser(currentUser.id, {
       photo: base64,
     });
+    const index = cachedUsers.findIndex(
+      (u) => u.id === currentUser.id,
+    );
+    if (index !== -1) {
+      cachedUsers[index].photo = base64;
+    }
     document.getElementById("profilePhoto").src = base64;
     showMessage("Foto actualizada", "ok");
   });
@@ -363,6 +373,13 @@ async function saveProfile() {
     updatedData.password = password;
   }
   await updateUser(currentUser.id, updatedData);
+  const index = cachedUsers.findIndex((u) => u.id === currentUser.id);
+  if (index !== -1) {
+    cachedUsers[index] = {
+      ...cachedUsers[index],
+      ...updatedData,
+    };
+  }
   const updatedUser = {
     ...currentUser,
     ...updatedData,
@@ -379,8 +396,8 @@ async function saveProfile() {
 /* ---------------- CONTACTOS / CHAT ---------------- */
 
 async function loadUsers() {
-  const users = await getUsers();
-  const messages = await getMessages();
+  const users = cachedUsers;
+  const messages = cachedMessages;
   const currentUser = getCurrentUser();
   const container = document.getElementById("usersList");
   container.innerHTML = "";
@@ -453,7 +470,7 @@ async function startChat(userId) {
 }
 
 async function updateChatHeader(userId) {
-  const users = await getUsers();
+  const users = cachedUsers;
   const user = users.find((u) => u.id === userId);
   const currentUser = users.find((u) => u.id === getCurrentUser().id);
   const chatUserInfo = document.getElementById("chatUserInfo");
@@ -500,19 +517,19 @@ function loadMessages() {
   }
 
   unsubscribeMessages = subscribeToMessages((messages) => {
+    cachedMessages = messages;
     const currentUser = getCurrentUser();
     container.innerHTML = "";
-    const filteredMessages = messages.filter((m) => {
+    const filteredMessages = cachedMessages.filter((m) => {
       if (m.blocked && m.to === currentUser.id) {
         return false;
       }
-
       return (
         (m.from === currentUser.id && m.to === currentChatUser) ||
         (m.from === currentChatUser && m.to === currentUser.id)
       );
     });
-    const latestMessage = messages[messages.length - 1];
+    const latestMessage = cachedMessages[cachedMessages.length - 1];
     if (
       latestMessage &&
       latestMessage.id !== lastNotificationMessageId &&
