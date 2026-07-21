@@ -33,7 +33,8 @@ function initEvents() {
   registerPhotoLabel?.addEventListener("click", () => {
     document.getElementById("registerPhoto").click();
   });
-  editPhotoPreview?.addEventListener("pointerdown", () => {
+  editPhotoPreview?.addEventListener("click", () => {
+    editPhotoInput.value = "";
     editPhotoInput.click();
   });
   if (editInput) {
@@ -47,7 +48,8 @@ function initEvents() {
     });
   }
   profileStatus?.addEventListener("change", updateStatus);
-  profilePhoto?.addEventListener("pointerdown", () => {
+  profilePhoto?.addEventListener("click", () => {
+    profilePhotoInput.value = "";
     profilePhotoInput.click();
   });
   profilePhotoInput?.addEventListener("change", updateProfilePhoto);
