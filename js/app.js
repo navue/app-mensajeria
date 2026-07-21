@@ -33,8 +33,7 @@ function initEvents() {
   registerPhotoLabel?.addEventListener("click", () => {
     document.getElementById("registerPhoto").click();
   });
-  editPhotoPreview?.addEventListener("click", () => {
-    editPhotoInput.value = "";
+  editPhotoPreview?.addEventListener("pointerdown", () => {
     editPhotoInput.click();
   });
   if (editInput) {
@@ -48,8 +47,7 @@ function initEvents() {
     });
   }
   profileStatus?.addEventListener("change", updateStatus);
-  profilePhoto?.addEventListener("click", () => {
-    profilePhotoInput.value = "";
+  profilePhoto?.addEventListener("pointerdown", () => {
     profilePhotoInput.click();
   });
   profilePhotoInput?.addEventListener("change", updateProfilePhoto);
@@ -87,7 +85,6 @@ async function showEditProfile() {
 }
 
 async function showChat() {
-  showLoading();
   showView("chatView");
   document.querySelector(".app-container").classList.add("chat-mode");
   await loadProfile();
@@ -541,7 +538,6 @@ function loadMessages() {
     if (unreadMessages.length > 0) {
       markMessagesAsRead(currentChatUser);
     }
-    hideLoading();
     setTimeout(() => {
       container.scrollTop = container.scrollHeight;
     }, 0);
@@ -851,14 +847,4 @@ async function toggleBlockUser() {
   }
   await loadUsers();
   await updateChatHeader(currentChatUser);
-}
-
-/* ---------------- LOADING SPINNER ---------------- */
-
-function showLoading() {
-  document.getElementById("loadingOverlay")?.classList.remove("hidden");
-}
-
-function hideLoading() {
-  document.getElementById("loadingOverlay")?.classList.add("hidden");
 }
