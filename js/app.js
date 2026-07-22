@@ -454,8 +454,8 @@ async function updateChatHeader(userId) {
   const blockedMe = (user.blockedUsers || []).includes(currentUser.id);
   const iBlocked = (currentUser.blockedUsers || []).includes(userId);
   chatUserInfo.textContent = blockedMe
-    ? "Hablando con Usuario"
-    : `Hablando con ${user.nickname}`;
+    ? "Usuario"
+    : `${user.nickname}`;
   blockBtn.style.display = "block";
   blockBtn.textContent = iBlocked ? "Desbloquear" : "Bloquear";
 }
