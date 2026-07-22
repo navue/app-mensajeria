@@ -87,59 +87,21 @@ async function showEditProfile() {
 }
 
 async function showChat() {
-  showView("chatView");
-  document.querySelector(".app-container").classList.add("chat-mode");
-  await loadProfile();
-  await loadUsers();
-  const currentUser = getCurrentUser();
-  const users = await getUsers();
-  const messages = await getMessages();
-
-  const userMessages = messages.filter(
-    (m) => m.from === currentUser.id || m.to === currentUser.id,
-  );
-
-  if (userMessages.length > 0) {
-    const lastMessage = userMessages[userMessages.length - 1];
-
-    const lastChatUser =
-      lastMessage.from === currentUser.id ? lastMessage.to : lastMessage.from;
-
-    const userExists = users.find(
-      (u) => u.id === lastChatUser && u.active !== false,
-    );
-
-    if (userExists) {
-      currentChatUser = lastChatUser;
-      localStorage.setItem("currentChatUser", currentChatUser);
-
-      const chatBox = document.getElementById("chatBox");
-      chatBox.classList.remove("hidden");
-      chatBox.style.display = "flex";
-      await updateChatHeader(currentChatUser);
-      loadMessages();
-      return;
-    }
-  }
-
-  const savedChatUser = localStorage.getItem("currentChatUser");
-
-  if (savedChatUser) {
-    const userExists = users.find(
-      (u) => u.id === savedChatUser && u.active !== false,
-    );
-
-    if (userExists) {
-      currentChatUser = savedChatUser;
-
-      const chatBox = document.getElementById("chatBox");
-      chatBox.classList.remove("hidden");
-      chatBox.style.display = "flex";
-      await updateChatHeader(currentChatUser);
-      loadMessages();
-    } else {
-      localStorage.removeItem("currentChatUser");
-    }
+  document.getElementById("chatBox").style.display = "none";
+  document.getElementById("noChatSelected").style.display = "flex";
+  showLoading();
+  try {
+    showView("chatView");
+    document.querySelector(".app-container").classList.add("chat-mode");
+    const chatBox = document.getElementById("chatBox");
+    const noChatSelected = document.getElementById("noChatSelected");
+    if (chatBox) chatBox.style.display = "none";
+    if (noChatSelected) noChatSelected.style.display = "flex";
+    currentChatUser = null;
+    await loadProfile();
+    await loadUsers();
+  } finally {
+    hideLoading();
   }
 }
 
@@ -229,8 +191,22 @@ function handleRegisterResult(result) {
 }
 
 function logout() {
-  logoutUser();
+  if (unsubscribeMessages) {
+    unsubscribeMessages();
+    unsubscribeMessages = null;
+  }
+  currentChatUser = null;
   localStorage.removeItem("currentChatUser");
+  const chatBox = document.getElementById("chatBox");
+  if (chatBox) {
+    chatBox.classList.add("hidden");
+    chatBox.style.display = "none";
+  }
+  const messagesContainer = document.getElementById("messages");
+  if (messagesContainer) {
+    messagesContainer.innerHTML = "";
+  }
+  logoutUser();
   clearLoginForm();
   showLogin();
 }
@@ -439,19 +415,29 @@ function createUserElement(user) {
 }
 
 async function startChat(userId) {
+  document.getElementById("noChatSelected").style.display = "none";
+  document.getElementById("chatBox").classList.remove("hidden");
+  document.getElementById("chatBox").style.display = "flex";
   const users = await getUsers();
   const currentUser = users.find((u) => u.id === getCurrentUser().id);
-  if (currentUser.blockedUsers?.includes(userId)) {
-    return;
+  if (currentUser.blockedUsers?.includes(userId)) return;
+  if (unsubscribeMessages) {
+    unsubscribeMessages();
+    unsubscribeMessages = null;
   }
   currentChatUser = userId;
-  localStorage.setItem("currentChatUser", userId);
+  const container = document.getElementById("messages");
+  if (container) container.innerHTML = "";
   await markMessagesAsRead(userId);
   const chatBox = document.getElementById("chatBox");
-  chatBox.classList.remove("hidden");
-  chatBox.style.display = "flex";
+  const noChatSelected = document.getElementById("noChatSelected");
+  if (noChatSelected) noChatSelected.style.display = "none";
+  if (chatBox) {
+    chatBox.classList.remove("hidden");
+    chatBox.style.display = "flex";
+  }
   await updateChatHeader(userId);
-  await loadMessages();
+  loadMessages();
 }
 
 async function updateChatHeader(userId) {
@@ -540,6 +526,7 @@ function loadMessages() {
     if (unreadMessages.length > 0) {
       markMessagesAsRead(currentChatUser);
     }
+    hideLoading();
     setTimeout(() => {
       container.scrollTop = container.scrollHeight;
     }, 0);
@@ -849,4 +836,14 @@ async function toggleBlockUser() {
   }
   await loadUsers();
   await updateChatHeader(currentChatUser);
+}
+
+/* ---------------- LOADING SPINNER ---------------- */
+
+function showLoading() {
+  document.getElementById("loadingOverlay")?.classList.remove("hidden");
+}
+
+function hideLoading() {
+  document.getElementById("loadingOverlay")?.classList.add("hidden");
 }

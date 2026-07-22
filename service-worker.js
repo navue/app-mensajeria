@@ -1,4 +1,4 @@
-const CACHE_NAME = "app-mensajeria-cache-v3.1.0";
+const CACHE_NAME = "app-mensajeria-cache-v3.2.0";
 const urlsToCache = [
   "./",
   "./index.html",
